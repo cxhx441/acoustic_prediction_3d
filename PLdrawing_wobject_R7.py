@@ -5,7 +5,6 @@ import openpyxl
 import math
 import random
 import sys
-#sys.path.append('C:/Users/craig/Dropbox/00 - Cloud Documents/06 - Code/01 - Python Scripts')
 import utils
 import numpy
 import tkinter.font
@@ -18,6 +17,36 @@ TOP_IMAGE_FILEPATH = "top_image.png"
 XL_FILEPATH = 'Aegis San Rafael - PL - 2020.08.17.xlsm'
 XL_FILEPATH_SAVE = XL_FILEPATH[0:-5] + ' - exported.xlsm'
 DRAWING_FONT = ('Helvetica 15 bold')
+
+
+NUMBER_OF_UNITS = 'A'
+TAG = 'B'
+PATH = 'C'
+MAKE = 'D'
+MODEL = 'E'
+Hz_63 = 'F'
+Hz_125 = 'G'
+Hz_250 = 'H'
+Hz_500 = 'I'
+Hz_1k = 'J'
+Hz_2k = 'K'
+Hz_4k = 'L'
+Hz_8k = 'M'
+LwA_LpA = 'N'
+REF_DIST = 'O'
+TESTED_Q = 'P'
+INSTALLED_Q = 'R'
+INSERTION_LOSS = 'S'
+EQMT_X_COORD = 'T'
+EQMT_Y_COORD = 'U'
+BUILDING_HEIGHT = 'W'
+UNIT_HEIGHT = 'X'
+RECEIVER_LABEL = 'Z'
+RECEIVER_X_COORD = 'AA'
+RECEIVER_Y_COORD = 'AB'
+RECEIVER_Z_COORD = 'AC'
+RECEIVER_LIMIT = 'AD'
+RECEIVER_DESCRIPTION = 'AF'
 
 TAKE_ARI_BARRIER = True
 TAKE_OB_FRESNAL_BARRIER = False
