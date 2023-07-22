@@ -3,25 +3,28 @@ import math
 from pyparsing import line
 
 
-class Line_2D:
+class Line:
     """A line object that can be used to calculate slope, length, and angle."""
+
     def __init__(
-        self, start_coords: tuple[float, float], end_coords: tuple[float, float]
+        self,
+        start_coords: tuple[float, float, float],
+        end_coords: tuple[float, float, float],
     ) -> None:
-        self.x0, self.y0 = start_coords
-        self.x1, self.y1 = end_coords
+        self.x0, self.y0, self.z0 = start_coords
+        self.x1, self.y1, self.z1 = end_coords
 
-    def get_start_coords(self) -> tuple[float, float]:
-        return (self.x0, self.y0)
+    def get_start_coords(self) -> tuple[float, float, float]:
+        return (self.x0, self.y0, self.z0)
 
-    def get_end_coords(self) -> tuple[float, float]:
-        return (self.x1, self.y1)
+    def get_end_coords(self) -> tuple[float, float, float]:
+        return (self.x1, self.y1, self.z1)
 
-    def set_start_coords(self, new_start) -> None:
-        self.x0, self.y0 = new_start
+    def set_start_coords(self, new_start: tuple[float, float, float]) -> None:
+        self.x0, self.y0, self.z0 = new_start
 
-    def set_end_coords(self, new_end) -> None:
-        (self.x1, self.y1) = new_end
+    def set_end_coords(self, new_end: tuple[float, float, float]) -> None:
+        self.x1, self.y1, self.z1 = new_end
 
     def get_delta_x(self) -> float:
         return abs(self.x1 - self.x0)
@@ -29,71 +32,16 @@ class Line_2D:
     def get_delta_y(self) -> float:
         return abs(self.y1 - self.y0)
 
+    def get_delta_z(self) -> float:
+        return abs(self.z1 - self.z0)
+
     def get_length(self):
-        return (self.get_delta_x(), self.get_delta_y())
+        return math.sqrt(
+            self.get_delta_x() ** 2 + self.get_delta_y() ** 2 + self.get_delta_z() ** 2
+        )
 
     def get_center_coords(self):
-        return ((self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2)
-
-    def get_angle(self):
-        return math.atan2(self.get_delta_x(), self.get_delta_y())
-
-    def get_slope(self):
-        return (self.y1 - self.y0) / (self.x1 - self.x0)
-
-    def get_y_intercept(self) -> tuple[float, float]:
-        x, y = self.get_start_coords()
-        m = self.get_slope()
-        b = y - m * x
-        return b
-
-    def rotate(self, pivot=None, angle=math.pi / 2) -> None:
-        """
-        Rotates the line around the pivot point by the angle in radians.
-        If no pivot point is given, the line will be rotated around its start point.
-        If no angle is given, the line will be rotated by 90 degrees.
-        """
-        new_x0, new_y0 = self.get_start_coords()
-        new_x1, new_y1 = self.get_end_coords()
-        new_x_mid, new_y_mid = self.get_center_coords()
-        if pivot == (new_x0, new_y0) or pivot is None:
-            trans_x0 = new_x0 - new_x0
-            trans_x1 = new_x1 - new_x0
-            trans_y0 = new_y0 - new_y0
-            trans_y1 = new_y1 - new_y0
-        elif pivot == (new_x1, new_y1):
-            trans_x0 = new_x0 - new_x1
-            trans_x1 = new_x1 - new_x1
-            trans_y0 = new_y0 - new_y1
-            trans_y1 = new_y1 - new_y1
-        elif pivot == (new_x_mid, new_y_mid):
-            trans_x0 = new_x0 - new_x_mid
-            trans_x1 = new_x1 - new_x_mid
-            trans_y0 = new_y0 - new_y_mid
-            trans_y1 = new_y1 - new_y_mid
-        else:
-            raise Exception("invalid pivot point")
-
-        self.x0 = trans_x0 * math.cos(angle) - trans_y0 * math.sin(angle)
-        self.x1 = trans_x1 * math.cos(angle) - trans_y1 * math.sin(angle)
-        self.y0 = trans_x0 * math.sin(angle) + trans_y0 * math.cos(angle)
-        self.y1 = trans_x1 * math.sin(angle) + trans_y1 * math.cos(angle)
-
-        if pivot == (new_x0, new_y0) or pivot is None:
-            self.x0 += new_x0
-            self.x1 += new_x0
-            self.y0 += new_y0
-            self.y1 += new_y0
-        elif pivot == (new_x1, new_y1):
-            self.x0 += new_x1
-            self.x1 += new_x1
-            self.y0 += new_y1
-            self.y1 += new_y1
-        elif pivot == (new_x_mid, new_y_mid):
-            self.x0 += new_x_mid
-            self.x1 += new_x_mid
-            self.y0 += new_y_mid
-            self.y1 += new_y_mid
+        return (self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2, (self.z0 + self.z1) / 2
 
     def move(self, destination_coord) -> None:
         """Moves the line to the destination coordinates. Move is relative to the start coordinates of the line."""
@@ -109,128 +57,63 @@ class Line_2D:
             self.get_end_coords()[0] + movement_coords[0],
             self.get_end_coords()[1] + movement_coords[1],
         )
+
         self.set_start_coords(new_start_coords)
         self.set_end_coords(new_end_coords)
 
-    def move_vertical(self, y_amount) -> None:
-        self.y0 += y_amount
-        self.y1 += y_amount
+    # def move_vertical(self, y_amount) -> None:
+    #     self.y0 += y_amount
+    #     self.y1 += y_amount
 
-    def move_horizontal(self, x_amount) -> None:
-        self.x0 += x_amount
-        self.x1 += x_amount
+    # def move_horizontal(self, x_amount) -> None:
+    #     self.x0 += x_amount
+    #     self.x1 += x_amount
 
-    def angle_between_2_lines(self, other_line: type["Line"]) -> float:
-        """returns the angle in degrees between to lines"""
-        m0 = self.get_slope()
-        m1 = other_line.get_slope()
-        return math.degrees(math.atan((m1 - m0) / (1 + (m1 * m0))))
+    # def move_elevation(self, z_amount) -> None:
+    #     self.z0 += z_amount
+    #     self.z1 += z_amount
 
-    def get_intersection_of_2_lines(
-        self, other_line: type["Line"]
-    ) -> tuple[float, float]:
-        """Returns the intersection coordinate of 2 lines. meant for use when drawing reflection rays."""
-        # if reflector horizontal
-        if self.get_start_coords()[1] == self.get_end_coords()[1]:
-            print("horiz")
-            return (other_line.get_start_coords()[0], self.get_start_coords()[1])
-        # if reflector vertical
-        elif self.get_start_coords()[0] == self.get_end_coords()[0]:
-            print("vert")
-            return (self.get_start_coords()[0], other_line.get_start_coords()[1])
-        else:
-            m0, b0 = self.get_slope(), self.get_y_intercept()
-            m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
-            x_int = (b1 - b0) / (m0 - m1)
-            return (x_int, m0 * x_int + b0)
+    # def angle_between_2_lines(self, other_line: type["Line"]) -> float:
+    #     """returns the angle in degrees between to lines"""
+    #     m0 = self.get_slope()
+    #     m1 = other_line.get_slope()
+    #     return math.degrees(math.atan((m1 - m0) / (1 + (m1 * m0))))
 
+    # def get_intersection_of_2_lines(
+    #     self, other_line: type["Line"]
+    # ) -> tuple[float, float]:
+    #     """Returns the intersection coordinate of 2 lines. meant for use when drawing reflection rays."""
+    #     # if reflector horizontal
+    #     if self.get_start_coords()[1] == self.get_end_coords()[1]:
+    #         print("horiz")
+    #         return (other_line.get_start_coords()[0], self.get_start_coords()[1])
+    #     # if reflector vertical
+    #     elif self.get_start_coords()[0] == self.get_end_coords()[0]:
+    #         print("vert")
+    #         return (self.get_start_coords()[0], other_line.get_start_coords()[1])
+    #     else:
+    #         m0, b0 = self.get_slope(), self.get_y_intercept()
+    #         m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
+    #         x_int = (b1 - b0) / (m0 - m1)
+    #         return (x_int, m0 * x_int + b0)
 
-class Ray(Line):
-    rays = []
+class Barrier(Line):
+    barriers = []
 
-    def __init__(self, start_coords, end_coords):
+    def __init__(self, start_coords, end_coords) -> None:
         super().__init__(start_coords, end_coords)
-        Ray.rays.append(self)
-
-    def copy(self):
-        return Ray(self.get_start_coords(), self.get_end_coords())
-
-    def get_reflected_ray(self, ray_obj, angle):
-        return Ray(self.get_start_coords(), self.get_end_coords())
-
-    def extend(self, room_size):
-        x0, y0 = self.get_start_coords()
-        x1, y1 = self.get_end_coords()
-        # going left
-        if x0 > x1:
-            x_towidth = 0
-            m_towidth, b_towidth = self.get_slope(), self.get_y_intercept()
-            y_towidth = m_towidth * x_towidth + b_towidth
-        # going right
-        elif x0 < x1:
-            x_towidth = room_size[0]
-            m_towidth, b_towidth = self.get_slope(), self.get_y_intercept()
-            y_towidth = m_towidth * x_towidth + b_towidth
-        # going down
-        if y0 < y1:
-            y_toheight = room_size[1]
-            m_toheight, b_toheight = self.get_slope(), self.get_y_intercept()
-            x_toheight = (y_toheight - b_toheight) / m_toheight
-        # going up
-        elif y0 > y1:
-            y_toheight = 0
-            m_toheight, b_toheight = self.get_slope(), self.get_y_intercept()
-            x_toheight = (y_toheight - b_toheight) / m_toheight
-
-        len_toheight = ((y_toheight - y0) ** 2 + (x_toheight - x0) ** 2) ** 0.5
-        len_towidth = ((y_towidth - y0) ** 2 + (x_towidth - x0) ** 2) ** 0.5
-        if len_toheight < len_towidth:
-            self.set_end_coords((x_toheight, y_toheight))
-        else:
-            self.set_end_coords((x_towidth, y_towidth))
-
-
-class Reflector(Line):
-    reflectors = []
-
-    def __init__(self, start_coords, end_coords):
-        super().__init__(start_coords, end_coords)
-        Reflector.reflectors.append(self)
-
-    def copy(self):
-        return Reflector(self.get_start_coords(), self.get_end_coords())
-
-    def move_up(self, y):
-        self.move_vertical(-y)
-
-    def move_down(self, y):
-        self.move_vertical(y)
-
-    def move_right(self, x):
-        self.move_horizontal(x)
-
-    def move_left(self, x):
-        self.move_horizontal(-x)
+        Barrier.barriers.append(self)
 
 
 class Point:
     def __init__(self, coords) -> None:
-        self.x_pos, self.y_pos = coords
+        self.x, self.y, self.z = coords
 
     def get_coords(self):
-        return self.x_pos, self.y_pos
+        return self.x, self.y
 
-    def move_up(self, y):
-        self.y_pos -= y
-
-    def move_down(self, y):
-        self.y_pos += y
-
-    def move_right(self, x):
-        self.x_pos += x
-
-    def move_left(self, x):
-        self.x_pos -= x
+    def set_coords(self, coords):
+        self.x, self.y, self.z = coords
 
 
 class Receiver(Point):
