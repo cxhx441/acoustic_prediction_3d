@@ -43,6 +43,12 @@ class Line():
     def get_slope(self):
         return (self.y1-self.y0) / (self.x1-self.x0)
 
+    def get_y_intercept(self) -> tuple[float, float]:
+        x, y = self.get_start_coords()
+        m = self.get_slope()
+        b = y - m*x
+        return b
+
     def rotate(self,pivot=None, angle=None):
         if angle == None:
             angle = math.pi/2
@@ -117,8 +123,8 @@ class Line():
             print("vert")
             return(self.get_start_coords()[0], other_line.get_start_coords()[1])
         else:
-            m0, b0 = self.get_slope_intercept_form()
-            m1, b1 = other_line.get_slope_intercept_form()
+            m0, b0 = self.get_slope(), self.get_y_intercept()
+            m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
             x_int = (b1 - b0)/(m0-m1)
             return (x_int, m0*x_int + b0)
 
@@ -142,22 +148,22 @@ class Ray(Line):
         # going left
         if x0 > x1:
             x_towidth = 0
-            m_towidth, b_towidth = self.get_slope_intercept_form()
+            m_towidth, b_towidth = self.get_slope(), self.get_y_intercept()
             y_towidth = m_towidth*x_towidth + b_towidth
         # going right
         elif x0 < x1:
             x_towidth = room_size[0]
-            m_towidth, b_towidth = self.get_slope_intercept_form()
+            m_towidth, b_towidth = self.get_slope(), self.get_y_intercept()
             y_towidth = m_towidth*x_towidth + b_towidth
         #going down
         if y0 < y1:
             y_toheight = room_size[1]
-            m_toheight, b_toheight = self.get_slope_intercept_form()
+            m_toheight, b_toheight = self.get_slope(), self.get_y_intercept()
             x_toheight = (y_toheight - b_toheight)/m_toheight
         #going up
         elif y0 > y1:
             y_toheight = 0
-            m_toheight, b_toheight = self.get_slope_intercept_form()
+            m_toheight, b_toheight = self.get_slope(), self.get_y_intercept()
             x_toheight = (y_toheight - b_toheight)/m_toheight
 
         len_toheight = ((y_toheight-y0)**2 + (x_toheight-x0)**2)**0.5
