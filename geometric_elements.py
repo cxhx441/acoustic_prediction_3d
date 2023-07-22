@@ -3,33 +3,28 @@ import math
 from pyparsing import line
 
 class Line():
-    def __init__(self, start_coords, end_coords) -> None:
+    """A line object that can be used to calculate slope, length, and angle."""
+    def __init__(self, start_coords: tuple[float, float], end_coords: tuple[float, float]) -> None:
         self.x0, self.y0 = start_coords
         self.x1, self.y1 = end_coords
 
-    def get_start_coords(self):
+    def get_start_coords(self) -> tuple[float, float]:
         return (self.x0, self.y0)
 
-    def get_end_coords(self):
+    def get_end_coords(self) -> tuple[float, float]:
         return (self.x1, self.y1)
 
-    def set_start_coords(self, new_start):
+    def set_start_coords(self, new_start) -> None:
         self.x0, self.y0 = new_start
 
-    def set_end_coords(self, new_end):
+    def set_end_coords(self, new_end) -> None:
         (self.x1, self.y1) = new_end
 
-    def get_delta_x(self):
+    def get_delta_x(self) -> float:
         return abs(self.x1 - self.x0)
 
-    def get_delta_y(self):
+    def get_delta_y(self) -> float:
         return abs(self.y1 - self.y0)
-
-    def get_slope_intercept_form(self):
-        x, y = self.get_start_coords()
-        m = self.get_slope()
-        b = y - m*x
-        return (m, b)
 
     def get_length(self):
         return (self.get_delta_x(), self.get_delta_y())
