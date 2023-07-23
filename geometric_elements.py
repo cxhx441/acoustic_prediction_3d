@@ -18,14 +18,11 @@ class Point:
             + (self.z - other_point.z) ** 2
         )
 
+
 class Line:
     """A line object that can be used to calculate slope, length, and angle."""
 
-    def __init__(
-        self,
-        start_coords: "Point",
-        end_coords: "Point"
-    ) -> None:
+    def __init__(self, start_coords: "Point", end_coords: "Point") -> None:
         self.start = start_coords
         self.end = end_coords
 
@@ -45,10 +42,30 @@ class Line:
         return self.start.get_distance(self.end)
 
     def get_slope(self):
-        return (self.y1-self.y0) / (self.x1-self.x0)
+        return (self.y1 - self.y0) / (self.x1 - self.x0)
+
+    def get_y_intercept(self):
+        x, y = self.get_start_coords()
+        m = self.get_slope()
+        b = y - m * x
+        return b
+
+    def get_intersection_of_2_lines(
+        self, other_line: type["Line"]
+    ) -> tuple[float, float]:
+        """returns the intersection coordinates of 2 lines."""
+        m0, b0 = self.get_slope(), self.get_y_intercept()
+        m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
+        intersection_x = (b1 - b0) / (m0 - m1)
+        intersection_y = m0 * intersection_x + b0
+        return (intersection_x, intersection_y)
 
     def get_center_coords(self):
-        return (self.start.x + self.end.x) / 2, (self.start.y + self.end.y) / 2, (self.start.z + self.end.z) / 2
+        return (
+            (self.start.x + self.end.x) / 2,
+            (self.start.y + self.end.y) / 2,
+            (self.start.z + self.end.z) / 2,
+        )
 
     def move(self, destination_coord) -> None:
         """Moves the line to the destination coordinates. Move is relative to the start coordinates of the line."""
@@ -59,12 +76,12 @@ class Line:
         new_start_coords = (
             self.start.x + movement_coords[0],
             self.start.y + movement_coords[1],
-            self.start.z
+            self.start.z,
         )
         new_end_coords = (
             self.end.x + movement_coords[0],
             self.end.y + movement_coords[1],
-            self.end.z
+            self.end.z,
         )
 
         self.set_start_coords(new_start_coords)
@@ -87,21 +104,3 @@ class Line:
     #     m0 = self.get_slope()
     #     m1 = other_line.get_slope()
     #     return math.degrees(math.atan((m1 - m0) / (1 + (m1 * m0))))
-
-    # def get_intersection_of_2_lines(
-    #     self, other_line: type["Line"]
-    # ) -> tuple[float, float]:
-    #     """Returns the intersection coordinate of 2 lines. meant for use when drawing reflection rays."""
-    #     # if reflector horizontal
-    #     if self.get_start_coords()[1] == self.get_end_coords()[1]:
-    #         print("horiz")
-    #         return (other_line.get_start_coords()[0], self.get_start_coords()[1])
-    #     # if reflector vertical
-    #     elif self.get_start_coords()[0] == self.get_end_coords()[0]:
-    #         print("vert")
-    #         return (self.get_start_coords()[0], other_line.get_start_coords()[1])
-    #     else:
-    #         m0, b0 = self.get_slope(), self.get_y_intercept()
-    #         m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
-    #         x_int = (b1 - b0) / (m0 - m1)
-    #         return (x_int, m0 * x_int + b0)

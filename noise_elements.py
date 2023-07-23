@@ -360,6 +360,8 @@ class Map:
         self.barriers = barriers
         self.source_receiver_pairs = set()
         self.source_receiver_barrier_combos = set()
+        self.TAKE_ARI_BARRIER = True
+        self.TAKE_OB_BARRIER = True
 
     # getters
     def get_sources(self) -> set:
@@ -451,7 +453,10 @@ class Map:
                 bar_TL = 0
                 for b in self.barriers:
                     if (s, r, b) in self.source_receiver_barrier_combos:
-                        bar_TL = b.get_insertion_loss(s, r)
+                        if self.TAKE_ARI_BARRIER is True and self.TAKE_OB_BARRIER is False:
+                            bar_TL = b.get_insertion_loss_ARI(s, r)[0]
+                        elif self.TAKE_ARI_BARRIER is True and self.TAKE_OB_BARRIER is True and s.octave_bands is not None:
+                            bar_TL = b.get_insertion_loss_OB_fresnel(s, r)[0]
                         break
                 dBA = s.dBA + distance_loss - bar_TL
                 sound_pressure_to_add += 10 ** (dBA / 10)
