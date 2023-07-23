@@ -1,61 +1,67 @@
 import math
 
-from pyparsing import line
 
+class Point:
+    def __init__(self, coords: tuple[float, float, float]) -> None:
+        self.x, self.y, self.z = coords
+
+    def get_coords(self) -> tuple[float, float, float]:
+        return self.x, self.y, self.z
+
+    def set_coords(self, coords: tuple[float, float, float]):
+        self.x, self.y, self.z = coords
+
+    def get_distance(self, other_point) -> float:
+        return math.sqrt(
+            (self.x - other_point.x) ** 2
+            + (self.y - other_point.y) ** 2
+            + (self.z - other_point.z) ** 2
+        )
 
 class Line:
     """A line object that can be used to calculate slope, length, and angle."""
 
     def __init__(
         self,
-        start_coords: tuple[float, float, float],
-        end_coords: tuple[float, float, float],
+        start_coords: "Point",
+        end_coords: "Point"
     ) -> None:
-        self.x0, self.y0, self.z0 = start_coords
-        self.x1, self.y1, self.z1 = end_coords
+        self.start = start_coords
+        self.end = end_coords
 
-    def get_start_coords(self) -> tuple[float, float, float]:
-        return (self.x0, self.y0, self.z0)
+    def get_start_coords(self) -> "Point":
+        return self.start
 
-    def get_end_coords(self) -> tuple[float, float, float]:
-        return (self.x1, self.y1, self.z1)
+    def get_end_coords(self) -> "Point":
+        return self.end
 
-    def set_start_coords(self, new_start: tuple[float, float, float]) -> None:
-        self.x0, self.y0, self.z0 = new_start
+    def set_start_coords(self, new_start: "Point") -> None:
+        self.start = Point(new_start)
 
-    def set_end_coords(self, new_end: tuple[float, float, float]) -> None:
-        self.x1, self.y1, self.z1 = new_end
-
-    def get_delta_x(self) -> float:
-        return abs(self.x1 - self.x0)
-
-    def get_delta_y(self) -> float:
-        return abs(self.y1 - self.y0)
-
-    def get_delta_z(self) -> float:
-        return abs(self.z1 - self.z0)
+    def set_end_coords(self, new_end: "Point") -> None:
+        self.end = Point(new_end)
 
     def get_length(self):
-        return math.sqrt(
-            self.get_delta_x() ** 2 + self.get_delta_y() ** 2 + self.get_delta_z() ** 2
-        )
+        return self.start.get_distance(self.end)
 
     def get_center_coords(self):
-        return (self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2, (self.z0 + self.z1) / 2
+        return (self.start.x + self.end.x) / 2, (self.start.y + self.end.y) / 2, (self.start.z + self.end.z) / 2
 
     def move(self, destination_coord) -> None:
         """Moves the line to the destination coordinates. Move is relative to the start coordinates of the line."""
         movement_coords = (
-            destination_coord[0] - self.get_start_coords()[0],
-            destination_coord[1] - self.get_start_coords()[1],
+            destination_coord[0] - self.start.x,
+            destination_coord[1] - self.start.y,
         )
         new_start_coords = (
-            self.get_start_coords()[0] + movement_coords[0],
-            self.get_start_coords()[1] + movement_coords[1],
+            self.start.x + movement_coords[0],
+            self.start.y + movement_coords[1],
+            self.start.z
         )
         new_end_coords = (
-            self.get_end_coords()[0] + movement_coords[0],
-            self.get_end_coords()[1] + movement_coords[1],
+            self.end.x + movement_coords[0],
+            self.end.y + movement_coords[1],
+            self.end.z
         )
 
         self.set_start_coords(new_start_coords)
@@ -96,37 +102,3 @@ class Line:
     #         m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
     #         x_int = (b1 - b0) / (m0 - m1)
     #         return (x_int, m0 * x_int + b0)
-
-class Barrier(Line):
-    barriers = []
-
-    def __init__(self, start_coords, end_coords) -> None:
-        super().__init__(start_coords, end_coords)
-        Barrier.barriers.append(self)
-
-
-class Point:
-    def __init__(self, coords) -> None:
-        self.x, self.y, self.z = coords
-
-    def get_coords(self):
-        return self.x, self.y
-
-    def set_coords(self, coords):
-        self.x, self.y, self.z = coords
-
-
-class Receiver(Point):
-    receivers = []
-
-    def __init__(self, coords) -> None:
-        super().__init__(coords)
-        Receiver.receivers.append(self)
-
-
-class Source(Point):
-    sources = []
-
-    def __init__(self, coords) -> None:
-        super().__init__(coords)
-        Source.sources.append(self)
