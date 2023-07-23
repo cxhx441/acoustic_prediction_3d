@@ -20,12 +20,6 @@ class Source(Point):
     def remove_affected_receiver(self, r: "Receiver"):
         self.affected_receivers.remove(r)
 
-    def add_receiver_barrier_pair(self, r: "Receiver", b: "Barrier"):
-        self.receiver_barrier_pairs.add((r, b))
-
-    def remove_receiver_barrier_pair(self, r: "Receiver", b: "Barrier"):
-        self.receiver_barrier_pairs.remove((r, b))
-
 
 class Receiver(Point):
     def __init__(self, coords) -> None:
@@ -39,23 +33,10 @@ class Receiver(Point):
     def remove_affecting_source(self, s: Source):
         self.affecting_sources.remove(s)
 
-    def add_source_barrier_pair(self, s: Source, b: "Barrier"):
-        self.source_barrier_pairs.add((s, b))
-
-    def remove_source_barrier_pair(self, s: Source, b: "Barrier"):
-        self.source_barrier_pairs.remove((s, b))
-
 
 class Barrier(Line):
     def __init__(self, start_coords, end_coords) -> None:
-        # set of tuples of (source, receiver) pairs. Intended use is so that each source-receiver pair uses this barriers IL.
-        self.source_receiver_pairs = set()
-
-    def add_source_receiver_pair(self, s: Source, r: Receiver):
-        self.source_receiver_pairs.add((s, r))
-
-    def remove_source_receiver_pair(self, s: Source, r: Receiver):
-        self.source_receiver_pairs.remove((s, r))
+        pass
 
 
 class Map:
@@ -63,6 +44,7 @@ class Map:
         self.sources = sources
         self.receivers = receivers
         self.barriers = barriers
+        self.source_receiver_combo = set()
 
     # getters
     def get_sources(self) -> set:
@@ -115,23 +97,12 @@ class Map:
 
     # source-receiver pair to barrier methods
     def add_source_receiver_barrier_combo(self, s: Source, r: Receiver, b: Barrier):
-        """
-        Adds a source-receiver-barrier combo to the map.
-        """
-        self.remove_source_receiver_barrier_combo(s, r, b)
-
-        s.add_receiver_barrier_pair(r, b)
-        r.add_source_barrier_pair(s, b)
-        b.add_source_receiver_pair(s, r)
+        """Adds a source-receiver-barrier combo to the map."""
+        self.source_receiver_barrier_combo.add((s, r, b))
 
     def remove_source_receiver_barrier_combo(self, s: Source, r: Receiver, b: Barrier):
         """Removes a source-receiver-barrier combo from the map."""
-        for s in self.sources:
-            s.remove_receiver_barrier_pair(r, b)
-        for r in self.receivers:
-            r.remove_source_barrier_pair(s, b)
-        for b in self.barriers:
-            b.remove_source_receiver_pair(s, r)
+        self.source_receiver_combo.remove((s, r, b))
 
     # TODO need to check that updating a source after it is already in the receiver's affecting set, it still works. Same for barriers.
 
