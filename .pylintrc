@@ -1,2 +1,2 @@
-# disable=invalid-name,
-# missing-function-docstring,
+disable=invalid-name,
+missing-function-docstring,
