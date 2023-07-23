@@ -44,6 +44,9 @@ class Line:
     def get_length(self):
         return self.start.get_distance(self.end)
 
+    def get_slope(self):
+        return (self.y1-self.y0) / (self.x1-self.x0)
+
     def get_center_coords(self):
         return (self.start.x + self.end.x) / 2, (self.start.y + self.end.y) / 2, (self.start.z + self.end.z) / 2
 
