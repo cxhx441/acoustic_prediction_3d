@@ -1,0 +1,41 @@
+import unittest
+import Barrier
+import Barrier_old
+from Source import Source, OctaveBands
+from Receiver import Receiver
+import random
+from Geometry import Point
+
+
+class TestBarrier(unittest.TestCase):
+    def test_ari_il(self):
+        def rand_db(): return random.randint(0, 100)
+        #rand_coord = random.randint(0, 100)
+        ob = OctaveBands(
+            rand_db(), rand_db(), rand_db(), rand_db(), rand_db(), rand_db(), rand_db(), rand_db()
+        )
+        dba = ob.get_dBA()
+        b_start = Point(5, -1, 5)
+        #b_start = Point(0, 0, 0) # causes error
+        b_end = Point(5, 1, 5)
+        s_coord = Point(1, 0, 1)
+        r_coord = Point(10, 0, 1)
+
+
+        s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, ob_sound_levels=ob)
+        r = Receiver(coords=r_coord)
+        b_old = Barrier_old.Barrier(start_coords=b_start, end_coords=b_end)
+        b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+
+        self.assertEqual(
+            b_old.get_insertion_loss_ARI(s, r),
+            b.get_insertion_loss_ARI(s, r),
+        )
+        self.assertEqual(
+            # TODO need to handle where path length difference = 0
+            b_old.get_insertion_loss_OB_fresnel(s, r),
+            b.get_insertion_loss_OB_fresnel(s, r),
+        )
+
+if __name__ == "__main__":
+    unittest.main()
