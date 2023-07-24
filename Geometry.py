@@ -2,14 +2,16 @@ import math
 
 
 class Coordinate:
+    """3 dimensional coordinate object."""
+
     def __init__(self, x: float, y: float, z: float) -> None:
         self.x, self.y, self.z = x, y, z
 
     def get_coords(self) -> tuple[float, float, float]:
         return self.x, self.y, self.z
 
-    def set_coords(self, coords: tuple[float, float, float]):
-        self.x, self.y, self.z = coords
+    def set_coords(self, x: float, y: float, z: float) -> None:
+        self.x, self.y, self.z = x, y, z
 
     def get_distance(self, other_point) -> float:
         return math.sqrt(
@@ -18,39 +20,49 @@ class Coordinate:
             + (self.z - other_point.z) ** 2
         )
 
+    def __add__(self, other_point) -> type["Coordinate"]:
+        return Coordinate(
+            self.x + other_point.x, self.y + other_point.y, self.z + other_point.z
+        )
+
+    def __sub__(self, other_point) -> type["Coordinate"]:
+        return Coordinate(
+            self.x - other_point.x, self.y - other_point.y, self.z - other_point.z
+        )
+
 
 class Line:
     """A line object that can be used to calculate slope, length, and angle."""
 
-    def __init__(self, start_coords: "Coordinate", end_coords: "Coordinate") -> None:
+    def __init__(self, start_coords: Coordinate, end_coords: Coordinate) -> None:
         self.start = start_coords
         self.end = end_coords
 
-    def get_start_coords(self) -> tuple[float, float, float]:
+    def get_start_coords(self) -> Coordinate:
         return self.start.get_coords()
 
-    def get_end_coords(self) -> tuple[float, float, float]:
+    def get_end_coords(self) -> Coordinate:
         return self.end.get_coords()
 
-    def set_start_point(self, new_start: "Coordinate") -> None:
-        self.start = Coordinate(new_start)
+    def set_start_point(self, new_start: Coordinate) -> None:
+        self.start = new_start
 
-    def set_end_point(self, new_end: "Coordinate") -> None:
-        self.end = Coordinate(new_end)
+    def set_end_point(self, new_end: Coordinate) -> None:
+        self.end = new_end
 
-    def get_length(self):
+    def get_length(self) -> float:
         return self.start.get_distance(self.end)
 
-    def get_slope(self):
+    def get_slope(self) -> float:
         return (self.y1 - self.y0) / (self.x1 - self.x0)
 
-    def get_y_intercept(self):
+    def get_y_intercept(self) -> float:
         x, y = self.get_start_coords()
         m = self.get_slope()
         b = y - m * x
         return b
 
-    def get_intersection_of_2_lines(
+    def get_xy_intersection_of_2_lines(
         self, other_line: type["Line"]
     ) -> tuple[float, float]:
         """returns the intersection coordinates of 2 lines."""
@@ -67,25 +79,12 @@ class Line:
             (self.start.z + self.end.z) / 2,
         )
 
-    def move(self, destination_coord) -> None:
+    def move_to(self, destination: Coordinate) -> None:
         """Moves the line to the destination coordinates. Move is relative to the start coordinates of the line."""
-        movement_coords = (
-            destination_coord[0] - self.start.x,
-            destination_coord[1] - self.start.y,
-        )
-        new_start_coords = (
-            self.start.x + movement_coords[0],
-            self.start.y + movement_coords[1],
-            self.start.z,
-        )
-        new_end_coords = (
-            self.end.x + movement_coords[0],
-            self.end.y + movement_coords[1],
-            self.end.z,
-        )
-
-        self.set_start_coords(new_start_coords)
-        self.set_end_coords(new_end_coords)
+        """ TODO TEST THIS"""
+        movement = destination - self.start
+        self.end += movement
+        self.start = destination
 
     # def move_vertical(self, y_amount) -> None:
     #     self.y0 += y_amount
