@@ -1,8 +1,8 @@
-from Geometry import Point
+from Geometry import Coordinate
 
 
-class Receiver(Point):
-    def __init__(self, coords: Point) -> None:
+class Receiver(Coordinate):
+    def __init__(self, coords: Coordinate) -> None:
         super().__init__(coords.x, coords.y, coords.z)
         self.affecting_sources = set()  # set of sources that affect this receiver
         self.source_barrier_pairs = set()  # set of tuples of (source, barrier) pairs.

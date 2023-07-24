@@ -1,4 +1,4 @@
-from Geometry import Point
+from Geometry import Coordinate
 import acoustics.decibel
 import math
 
@@ -37,11 +37,15 @@ class OctaveBands:
             dBA += 10 ** (lvl / 10)
         return 10 * math.log10(dBA)
 
+    def __str__(self):
+        return str(self.get_OB_sound_levels())
 
-class Source(Point):
+
+
+class Source(Coordinate):
     def __init__(
         self,
-        coords: Point,
+        coords: Coordinate,
         dBA: float,
         ref_dist: float,
         ob_sound_levels: OctaveBands = None,

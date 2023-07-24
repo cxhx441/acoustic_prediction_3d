@@ -1,7 +1,7 @@
 import math
 
 
-class Point:
+class Coordinate:
     def __init__(self, x: float, y: float, z: float) -> None:
         self.x, self.y, self.z = x, y, z
 
@@ -22,7 +22,7 @@ class Point:
 class Line:
     """A line object that can be used to calculate slope, length, and angle."""
 
-    def __init__(self, start_coords: "Point", end_coords: "Point") -> None:
+    def __init__(self, start_coords: "Coordinate", end_coords: "Coordinate") -> None:
         self.start = start_coords
         self.end = end_coords
 
@@ -32,11 +32,11 @@ class Line:
     def get_end_coords(self) -> tuple[float, float, float]:
         return self.end.get_coords()
 
-    def set_start_point(self, new_start: "Point") -> None:
-        self.start = Point(new_start)
+    def set_start_point(self, new_start: "Coordinate") -> None:
+        self.start = Coordinate(new_start)
 
-    def set_end_point(self, new_end: "Point") -> None:
-        self.end = Point(new_end)
+    def set_end_point(self, new_end: "Coordinate") -> None:
+        self.end = Coordinate(new_end)
 
     def get_length(self):
         return self.start.get_distance(self.end)

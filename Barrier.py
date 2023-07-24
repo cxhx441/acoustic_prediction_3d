@@ -1,4 +1,4 @@
-from Geometry import Line, Point
+from Geometry import Line, Coordinate
 from Source import Source  # for type hinting
 from Receiver import Receiver  # for type hinting
 import utils  # refactor to not need this.
@@ -9,8 +9,8 @@ import acoustics.decibel
 class Barrier(Line):
     def __init__(
         self,
-        start_coords: Point,
-        end_coords: Point,
+        start_coords: Coordinate,
+        end_coords: Coordinate,
     ) -> None:
         super().__init__(start_coords, end_coords)
 
