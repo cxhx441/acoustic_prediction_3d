@@ -39,6 +39,9 @@ class Coordinate:
             self.x - other_point.x, self.y - other_point.y, self.z - other_point.z
         )
 
+    def __str__(self) -> str:
+        return f"({self.x}, {self.y}, {self.z})"
+
 
 class Line:
     """A line object that can be used to calculate slope, length, and angle."""
@@ -98,6 +101,20 @@ class Line:
     def move_by(self, x: float, y: float, z: float) -> None:
         self.start.move_by(x, y, z)
         self.end.move_by(x, y, z)
+
+    def lies_on_point(self, q: Coordinate) -> bool:
+        """
+        https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+        Given three colinear points p, q, r, the function checks if point q lies on line segment 'pr'
+        """
+        if (
+            (q.x <= max(self.start.x, self.end.x))
+            and (q.x >= min(self.start.x, self.end.x))
+            and (q.y <= max(self.start.y, self.end.y))
+            and (q.y >= min(self.start.y, self.end.y))
+        ):
+            return True
+        return False
 
     # def move_vertical(self, y_amount) -> None:
     #     self.y0 += y_amount
