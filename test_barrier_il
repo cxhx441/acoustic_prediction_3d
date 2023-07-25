@@ -23,7 +23,7 @@ class TestBarrier(unittest.TestCase):
             "b_fres",
         )
 
-        for i in range(100000):
+        for i in range(10000):
             headers = (
                 "ob",
                 "dba",
@@ -82,20 +82,37 @@ class TestBarrier(unittest.TestCase):
 
             def rand_coord(low, high):
                 return Coordinate(
-                    randint(low, high), randint(low, high), randint(low, high)
+                    randint(low, high) / 10,
+                    randint(low, high) / 10,
+                    randint(low, high) / 10,
                 )
 
-            low, high = -10, 10
+            low, high = -100, 100
             b_start = rand_coord(low, high)
             # b_start = Coordinate(0, 0, 0) # causes error
             b_end = rand_coord(low, high)
             s_coord = rand_coord(low, high)
             r_coord = rand_coord(low, high)
 
-            b_start = Coordinate(9, 1, 6)
-            b_end = Coordinate(5, -2, 4)
-            s_coord = Coordinate(4, -8, 0)
-            r_coord = Coordinate(7, 4, 8)
+            # # same slope
+            # b_start = Coordinate(-4, 4, -2)
+            # b_end = Coordinate(-3, 3, -9)
+            # s_coord = Coordinate(8, -8, 10)
+            # r_coord = Coordinate(-5, 5, 0)
+
+            # # infinite slope
+            # b_start = Coordinate(-4, 4, -2)
+            # b_end = Coordinate(-3, 3, -9)
+            # s_coord = Coordinate(6, 9, 3)
+            # r_coord = Coordinate(6, 2, 4)
+
+            # # good case
+            # b_start = Coordinate(0, 10, 100)
+            # b_end = Coordinate(0, -10, 100)
+            # s_coord = Coordinate(-10, 0, 9)
+            # r_coord = Coordinate(10, 0, 9)
+
+            # TODO test a rotation
 
             s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
             r = Receiver(coords=r_coord)

@@ -66,8 +66,10 @@ class Line:
         return self.start.get_distance(self.end)
 
     def get_xy_slope(self) -> float:
-        #return (self.y1 - self.y0) / (self.x1 - self.x0)
-        return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+        try:
+            return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+        except ZeroDivisionError:
+            return math.inf
 
     def get_y_intercept(self) -> float:
         x, y = self.get_start_coords()
