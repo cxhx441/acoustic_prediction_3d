@@ -119,6 +119,59 @@ class Line:
             return True
         return False
 
+    def get_center_coords(self):
+        return ((self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2)
+
+    def get_angle(self):
+        return math.atan2(self.get_delta_x(), self.get_delta_y())
+
+    def rotate_xy(self, pivot=None, angle=None):
+        """
+        rotates the line around the pivot point. if no pivot point is given, the line will rotate around its center.
+        rotation angle is in radians.
+        """
+        if angle == None:
+            angle = math.pi / 2
+        new_x0, new_y0 = self.start.x, self.start.y
+        new_x1, new_y1 = self.end.x, self.end.y
+        new_x_mid, new_y_mid = self.get_center_coords()
+        if pivot == (new_x0, new_y0) or pivot == None:
+            trans_x0 = new_x0 - new_x0
+            trans_x1 = new_x1 - new_x0
+            trans_y0 = new_y0 - new_y0
+            trans_y1 = new_y1 - new_y0
+        elif pivot == (new_x1, new_y1):
+            trans_x0 = new_x0 - new_x1
+            trans_x1 = new_x1 - new_x1
+            trans_y0 = new_y0 - new_y1
+            trans_y1 = new_y1 - new_y1
+        elif pivot == (new_x_mid, new_y_mid):
+            trans_x0 = new_x0 - new_x_mid
+            trans_x1 = new_x1 - new_x_mid
+            trans_y0 = new_y0 - new_y_mid
+            trans_y1 = new_y1 - new_y_mid
+
+        self.x0 = trans_x0 * math.cos(angle) - trans_y0 * math.sin(angle)
+        self.x1 = trans_x1 * math.cos(angle) - trans_y1 * math.sin(angle)
+        self.y0 = trans_x0 * math.sin(angle) + trans_y0 * math.cos(angle)
+        self.y1 = trans_x1 * math.sin(angle) + trans_y1 * math.cos(angle)
+
+        if pivot == (new_x0, new_y0) or pivot == None:
+            self.x0 += new_x0
+            self.x1 += new_x0
+            self.y0 += new_y0
+            self.y1 += new_y0
+        elif pivot == (new_x1, new_y1):
+            self.x0 += new_x1
+            self.x1 += new_x1
+            self.y0 += new_y1
+            self.y1 += new_y1
+        elif pivot == (new_x_mid, new_y_mid):
+            self.x0 += new_x_mid
+            self.x1 += new_x_mid
+            self.y0 += new_y_mid
+            self.y1 += new_y_mid
+
     # def move_vertical(self, y_amount) -> None:
     #     self.y0 += y_amount
     #     self.y1 += y_amount
