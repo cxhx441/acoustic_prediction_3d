@@ -165,7 +165,7 @@ class Barrier(Line):
             hz2000,
             hz4000,
             hz8000,
-        ) = s.ob_sound_levels.get_OB_sound_levels()
+        ) = s.octave_band_levels.get_OB_sound_levels()
         eqmt_level = s.dBA
 
         # fixing escape on error with same barrier coordinate
