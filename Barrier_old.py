@@ -46,6 +46,10 @@ class Barrier(Line):
             print("source or receiver is on barrier start or end point")
             return 0
 
+        if self.get_xy_slope() == Line(s, r).get_xy_slope():
+            print("source-receiver line and barrier have same slope")
+            return 0
+
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
         bar_x0, bar_y0, bar_z0 = self.get_start_coords()
         bar_x1, bar_y1, bar_z1 = self.get_end_coords()
@@ -164,6 +168,10 @@ class Barrier(Line):
 
         if self.lies_on_point(s) or self.lies_on_point(r):
             print("source or receiver is on barrier start or end point")
+            return 0
+
+        if self.get_xy_slope() == Line(s, r).get_xy_slope():
+            print("source-receiver line and barrier have same slope")
             return 0
 
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
