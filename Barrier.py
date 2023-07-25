@@ -45,6 +45,11 @@ class Barrier(Line):
 
     def get_insertion_loss_ARI(self, s: Source, r: Receiver) -> float:
         """TODO refactor me"""
+
+        if self.lies_on_point(s) or self.lies_on_point(r):
+            print("source or receiver is on barrier start or end point")
+            return 0
+
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
         bar_x0, bar_y0, bar_z0 = self.get_start_coords()
         bar_x1, bar_y1, bar_z1 = self.get_end_coords()
@@ -128,6 +133,10 @@ class Barrier(Line):
             - distance_source2receiver_propogation
         )
 
+        if path_length_difference <= 0:
+            print("pld <= 0")
+            return 0
+
         # testing if line of sight is broken along VERTICAL plane
         eqmt_point = utils.Point(0, eqmt_z)
         receiver_point = utils.Point(distance_source2receiver_horizontal, rcvr_z)
@@ -156,6 +165,9 @@ class Barrier(Line):
 
     def get_insertion_loss_OB_fresnel(self, s: Source, r: Receiver) -> float:
         """TODO refactor me"""
+        if self.lies_on_point(s) or self.lies_on_point(r):
+            print("source or receiver is on barrier start or end point")
+            return 0
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
         bar_x0, bar_y0, bar_z0 = self.get_start_coords()
         bar_x1, bar_y1, bar_z1 = self.get_end_coords()
@@ -250,6 +262,10 @@ class Barrier(Line):
             + distance_receiver2barrier_top
             - distance_source2receiver_propogation
         )
+
+        if path_length_difference <= 0:
+            print("pld <= 0")
+            return 0
 
         # testing if line of sight is broken along VERTICAL plane
         eqmt_point = utils.Point(0, eqmt_z)
