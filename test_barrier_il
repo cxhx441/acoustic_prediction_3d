@@ -3,54 +3,156 @@ import Barrier
 import Barrier_old
 from Source import Source, OctaveBands
 from Receiver import Receiver
-import random
+from random import randint
 from Geometry import Coordinate
+from tabulate import tabulate
 
 
 class TestBarrier(unittest.TestCase):
     def test_ari_il(self):
-        def rand_db():
-            return random.randint(0, 100)
-
-        # rand_coord = random.randint(0, 100)
-        ob = OctaveBands(
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
+        print(
+            "ob",
+            "dba",
+            "b_start",
+            "b_end",
+            "s_coord",
+            "r_coord",
+            "b_old_ari",
+            "b_ari",
+            "b_old_fres",
+            "b_fres",
         )
-        dba = ob.get_dBA()
-        b_start = Coordinate(5, -1, 5)
-        # b_start = Coordinate(0, 0, 0) # causes error
-        b_end = Coordinate(5, 1, 5)
-        s_coord = Coordinate(1, 0, 1)
-        r_coord = Coordinate(10, 0, 1)
 
-        s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, ob_sound_levels=ob)
-        r = Receiver(coords=r_coord)
-        b_old = Barrier_old.Barrier(start_coords=b_start, end_coords=b_end)
-        b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+        for i in range(100000):
+            headers = (
+                "ob",
+                "dba",
+                "b_start",
+                "b_end",
+                "s_coord",
+                "r_coord",
+                "b_old_ari",
+                "b_ari",
+                "b_old_fres",
+                "b_fres",
+            )
 
-        b_old_ari = b_old.get_insertion_loss_ARI(s, r)
-        b_ari = b.get_insertion_loss_ARI(s, r)
-        self.assertEqual(b_old_ari, b_ari, msg=f"{b_old_ari} != {b_ari}")
+            def rand_db():
+                return randint(0, 100)
 
-        b_old_fresnel = (b_old.get_insertion_loss_OB_fresnel(s, r),)
-        b_fresnel = (b.get_insertion_loss_OB_fresnel(s, r),)
-        self.assertEqual(
-            b_old_fresnel, b_fresnel, msg=f"{b_old_fresnel} != {b_fresnel}"
-        )  # TODO need to handle where path length difference = 0
+            # rand_coord = random.randint(0, 100)
+            ob = OctaveBands(
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+            )
+            dba = ob.get_dBA()
 
-        print(ob)
-        print(b_old_ari)
-        print(b_ari)
-        print(b_old_fresnel)
-        print(b_fresnel)
+            # path hits barrier
+            # not vertical or horizontal
+            # barrier line is vertical
+            # barrier line is horizontal
+            # s_2_r line is horizontal
+            # s_2_r line is vertical
+            # path misses barrier
+            # horizontally
+            # not vertical or horizontal
+            # barrier line is vertical
+            # barrier line is horizontal
+            # s_2_r line is horizontal
+            # s_2_r line is vertical
+            # vertically
+            # not vertical or horizontal
+            # barrier line is vertical
+            # barrier line is horizontal
+            # s_2_r line is horizontal
+            # s_2_r line is vertical
 
+            # dba = ob.get_dBA()
+            # b_start = Coordinate(5, -1, 5)
+            # # b_start = Coordinate(0, 0, 0) # causes error
+            # b_end = Coordinate(5, 1, 5)
+            # s_coord = Coordinate(1, 0, 1)
+            # r_coord = Coordinate(10, 0, 1)
+
+            def rand_coord(low, high):
+                return Coordinate(
+                    randint(low, high), randint(low, high), randint(low, high)
+                )
+
+            low, high = -10, 10
+            b_start = rand_coord(low, high)
+            # b_start = Coordinate(0, 0, 0) # causes error
+            b_end = rand_coord(low, high)
+            s_coord = rand_coord(low, high)
+            r_coord = rand_coord(low, high)
+
+            b_start = Coordinate(9, 1, 6)
+            b_end = Coordinate(5, -2, 4)
+            s_coord = Coordinate(4, -8, 0)
+            r_coord = Coordinate(7, 4, 8)
+
+            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(coords=r_coord)
+            b_old = Barrier_old.Barrier(start_coords=b_start, end_coords=b_end)
+            b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+
+            print(f"TEST NUMBER {i}")
+            print(
+                tabulate(
+                    [[ob, dba, b_start, b_end, s_coord, r_coord]], headers=headers[:6]
+                )
+            )
+            b_old_ari = b_old.get_insertion_loss_ARI(s, r)
+            b_ari = b.get_insertion_loss_ARI(s, r)
+            b_old_fres = b_old.get_insertion_loss_OB_fresnel(s, r)
+            b_fres = b.get_insertion_loss_OB_fresnel(s, r)
+            print(
+                tabulate(
+                    [
+                        [
+                            ob,
+                            dba,
+                            b_start,
+                            b_end,
+                            s_coord,
+                            r_coord,
+                            b_old_ari,
+                            b_ari,
+                            b_old_fres,
+                            b_fres,
+                        ]
+                    ],
+                    headers=headers,
+                )
+            )
+            print()
+            print()
+            print()
+
+            with self.subTest():
+                self.assertEqual(b_old_ari, b_ari, msg=f"{b_old_ari} != {b_ari}")
+                self.assertEqual(
+                    b_old_fres, b_fres, msg=f"{b_old_fres} != {b_fres}"
+                )  # TODO need to handle where path length difference = 0
+
+        print(
+            "ob",
+            "dba",
+            "b_start",
+            "b_end",
+            "s_coord",
+            "r_coord",
+            "b_old_ari",
+            "b_ari",
+            "b_old_fres",
+            "b_fres",
+        )
 
 
 if __name__ == "__main__":
