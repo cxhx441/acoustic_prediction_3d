@@ -119,10 +119,10 @@ class Line:
             return True
         return False
 
-    def get_center_coords(self):
+    def get_xy_center_coords(self):
         return ((self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2)
 
-    def get_angle(self):
+    def get_xy_angle(self):
         return math.atan2(self.get_delta_x(), self.get_delta_y())
 
     def rotate_xy(self, pivot=None, angle=None):
