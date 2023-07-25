@@ -8,6 +8,7 @@ class Coordinate:
         self.x, self.y, self.z = x, y, z
 
     def get_coords(self) -> tuple[float, float, float]:
+        """returns the x, y, and z coordinates of the point."""
         return self.x, self.y, self.z
 
     def set_coords(self, x: float, y: float, z: float) -> None:
@@ -19,6 +20,14 @@ class Coordinate:
             + (self.y - other_point.y) ** 2
             + (self.z - other_point.z) ** 2
         )
+
+    def move_to(self, destination: type["Coordinate"]) -> None:
+        self.x = destination.x, self.y = destination.y, self.z = destination.z
+
+    def move_by(self, x: float, y: float, z: float) -> None:
+        self.x += x
+        self.y += y
+        self.z += z
 
     def __add__(self, other_point) -> type["Coordinate"]:
         return Coordinate(
@@ -85,6 +94,10 @@ class Line:
         movement = destination - self.start
         self.end += movement
         self.start = destination
+
+    def move_by(self, x: float, y: float, z: float) -> None:
+        self.start.move_by(x, y, z)
+        self.end.move_by(x, y, z)
 
     # def move_vertical(self, y_amount) -> None:
     #     self.y0 += y_amount
