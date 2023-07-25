@@ -3,9 +3,10 @@ import Barrier
 import Barrier_old
 from Source import Source, OctaveBands
 from Receiver import Receiver
-from random import randint
-from Geometry import Coordinate
+from random import randint, uniform
+from Geometry import Coordinate, Line
 from tabulate import tabulate
+import math
 
 
 class TestBarrier(unittest.TestCase):
@@ -170,6 +171,95 @@ class TestBarrier(unittest.TestCase):
             "b_old_fres",
             "b_fres",
         )
+
+    def test_rotation(self):
+        headers = (
+            "ob",
+            "dba",
+            "b_start",
+            "b_end",
+            "s_coord",
+            "r_coord",
+            "b_old_ari",
+            "b_ari",
+            "b_old_fres",
+            "b_fres",
+        )
+
+        def rand_db():
+            return randint(0, 100)
+
+        ob = OctaveBands(
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+        )
+        dba = ob.get_dBA()
+
+        def rand_coord(low, high):
+            return Coordinate(
+                randint(low, high) / 10,
+                randint(low, high) / 10,
+                randint(low, high) / 10,
+            )
+
+        low, high = -100, 100
+        b_start = rand_coord(low, high)
+        b_end = rand_coord(low, high)
+        s_coord = rand_coord(low, high)
+        r_coord = rand_coord(low, high)
+
+        # # same slope
+        # b_start = Coordinate(-4, 4, -2)
+        # b_end = Coordinate(-3, 3, -9)
+        # s_coord = Coordinate(8, -8, 10)
+        # r_coord = Coordinate(-5, 5, 0)
+
+        # # infinite slope
+        # b_start = Coordinate(-4, 4, -2)
+        # b_end = Coordinate(-3, 3, -9)
+        # s_coord = Coordinate(6, 9, 3)
+        # r_coord = Coordinate(6, 2, 4)
+
+        # # good case
+        # b_start = Coordinate(0.001, 10, 100)
+        # b_end = Coordinate(0, -10, 100)
+        # s_coord = Coordinate(-10, 0.001, 9)
+        # r_coord = Coordinate(10, 0, 9)
+
+        s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+        r = Receiver(coords=r_coord)
+        b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+
+        b_ari = b.get_insertion_loss_ARI(s, r)
+        b_fres = b.get_insertion_loss_OB_fresnel(s, r)
+
+        print(f"{b.start} -> {b.end}")
+        # then rotate
+        sr_line = Line(s_coord, r_coord)
+        intersection = b.get_xy_intersection_of_2_lines(sr_line)
+        intersection = Coordinate(intersection[0], intersection[1], 0)
+        rand_angle = uniform(0, 2 * math.pi)
+        b.rotate_xy(rand_angle, intersection)
+        s.set_coords = sr_line.start
+        r.set_coords = sr_line.end
+
+        b_rotated_ari = b.get_insertion_loss_ARI(s, r)
+        b_rotated_fres = b.get_insertion_loss_OB_fresnel(s, r)
+
+        print(f"{b.start} -> {b.end}")
+        print(f"{b_rotated_ari} == \n{b_ari}")
+        print()
+        print(f"{b.start} -> {b.end}")
+        print(f"{b_rotated_fres} == \n{b_fres}")
+        self.assertEqual(b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}")
+        self.assertEqual(b_rotated_fres, b_fres, msg=f"{b_rotated_fres} != {b_fres}")
+
 
 
 if __name__ == "__main__":

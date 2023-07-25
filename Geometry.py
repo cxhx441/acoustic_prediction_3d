@@ -72,8 +72,11 @@ class Line:
             return math.inf
 
     def get_y_intercept(self) -> float:
-        x, y = self.get_start_coords()
+        """TODO fix when slope is infinite"""
+        x, y = self.start.x, self.start.y
         m = self.get_xy_slope()
+        # if m == math.inf:
+        #     return x
         b = y - m * x
         return b
 
@@ -119,64 +122,39 @@ class Line:
             return True
         return False
 
-    def get_xy_center_coords(self):
-        return ((self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2)
+    # def get_center_coords_xy(self):
+    #     return ((self.start.x + self.end.x) / 2, (self.start.y + self.end.y) / 2)
 
     def get_delta_x(self):
-        return abs(self.x1 - self.x0)
+        return abs(self.end.x - self.start.x)
 
     def get_delta_y(self):
-        return abs(self.y1 - self.y0)
+        return abs(self.end.y - self.start.y)
 
     def get_angle_xy(self):
         return math.atan2(self.get_delta_x(), self.get_delta_y())
 
-    def rotate_xy(self, pivot=None, angle=None):
+    def rotate_xy(self, angle: float, pivot: Coordinate):
         """
         rotates the line around the pivot point. if no pivot point is given, the line will rotate around its center.
         rotation angle is in radians.
         """
-        if angle == None:
-            angle = math.pi / 2
-        new_x0, new_y0 = self.start.x, self.start.y
-        new_x1, new_y1 = self.end.x, self.end.y
-        new_x_mid, new_y_mid = self.get_center_coords()
-        if pivot == (new_x0, new_y0) or pivot == None:
-            trans_x0 = new_x0 - new_x0
-            trans_x1 = new_x1 - new_x0
-            trans_y0 = new_y0 - new_y0
-            trans_y1 = new_y1 - new_y0
-        elif pivot == (new_x1, new_y1):
-            trans_x0 = new_x0 - new_x1
-            trans_x1 = new_x1 - new_x1
-            trans_y0 = new_y0 - new_y1
-            trans_y1 = new_y1 - new_y1
-        elif pivot == (new_x_mid, new_y_mid):
-            trans_x0 = new_x0 - new_x_mid
-            trans_x1 = new_x1 - new_x_mid
-            trans_y0 = new_y0 - new_y_mid
-            trans_y1 = new_y1 - new_y_mid
+        # if angle == None:
+        #     angle = math.pi / 2
+        trans_x0 = self.start.x - pivot.x
+        trans_x1 = self.end.x - pivot.x
+        trans_y0 = self.start.y - pivot.y
+        trans_y1 = self.end.y - pivot.y
 
-        self.x0 = trans_x0 * math.cos(angle) - trans_y0 * math.sin(angle)
-        self.x1 = trans_x1 * math.cos(angle) - trans_y1 * math.sin(angle)
-        self.y0 = trans_x0 * math.sin(angle) + trans_y0 * math.cos(angle)
-        self.y1 = trans_x1 * math.sin(angle) + trans_y1 * math.cos(angle)
+        self.start.x = trans_x0 * math.cos(angle) - trans_y0 * math.sin(angle)
+        self.end.x = trans_x1 * math.cos(angle) - trans_y1 * math.sin(angle)
+        self.start.y = trans_x0 * math.sin(angle) + trans_y0 * math.cos(angle)
+        self.end.y = trans_x1 * math.sin(angle) + trans_y1 * math.cos(angle)
 
-        if pivot == (new_x0, new_y0) or pivot == None:
-            self.x0 += new_x0
-            self.x1 += new_x0
-            self.y0 += new_y0
-            self.y1 += new_y0
-        elif pivot == (new_x1, new_y1):
-            self.x0 += new_x1
-            self.x1 += new_x1
-            self.y0 += new_y1
-            self.y1 += new_y1
-        elif pivot == (new_x_mid, new_y_mid):
-            self.x0 += new_x_mid
-            self.x1 += new_x_mid
-            self.y0 += new_y_mid
-            self.y1 += new_y_mid
+        self.start.x += pivot.x
+        self.end.x += pivot.x
+        self.start.y += pivot.y
+        self.end.y += pivot.y
 
     # def move_vertical(self, y_amount) -> None:
     #     self.y0 += y_amount
