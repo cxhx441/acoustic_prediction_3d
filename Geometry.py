@@ -65,12 +65,13 @@ class Line:
     def get_length(self) -> float:
         return self.start.get_distance(self.end)
 
-    def get_slope(self) -> float:
-        return (self.y1 - self.y0) / (self.x1 - self.x0)
+    def get_xy_slope(self) -> float:
+        #return (self.y1 - self.y0) / (self.x1 - self.x0)
+        return (self.end.y - self.start.y) / (self.end.x - self.start.x)
 
     def get_y_intercept(self) -> float:
         x, y = self.get_start_coords()
-        m = self.get_slope()
+        m = self.get_xy_slope()
         b = y - m * x
         return b
 
@@ -78,8 +79,8 @@ class Line:
         self, other_line: type["Line"]
     ) -> tuple[float, float]:
         """returns the intersection coordinates of 2 lines."""
-        m0, b0 = self.get_slope(), self.get_y_intercept()
-        m1, b1 = other_line.get_slope(), other_line.get_y_intercept()
+        m0, b0 = self.get_xy_slope(), self.get_y_intercept()
+        m1, b1 = other_line.get_xy_slope(), other_line.get_y_intercept()
         intersection_x = (b1 - b0) / (m0 - m1)
         intersection_y = m0 * intersection_x + b0
         return (intersection_x, intersection_y)
