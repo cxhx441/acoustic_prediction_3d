@@ -1,3 +1,4 @@
+from sympy import Point, Line as sympy_Line, intersection
 import math
 
 
@@ -88,14 +89,18 @@ class Line:
         b = y - m * x
         return b
 
-    def get_xy_intersection(self, other_line: type["Line"]) -> tuple[float, float]:
+    def get_xy_intersection(self, other: type["Line"]) -> tuple[float, float]:
         """returns the intersection coordinates of 2 lines."""
-        m0, b0 = self.get_xy_slope(), self.get_y_intercept()
-        m1, b1 = other_line.get_xy_slope(), other_line.get_y_intercept()
-        if m0 == m1:
-            return None
-        intersection_x = (b1 - b0) / (m0 - m1)
-        intersection_y = m0 * intersection_x + b0
+        # m0, b0 = self.get_xy_slope(), self.get_y_intercept()
+        # m1, b1 = other_line.get_xy_slope(), other_line.get_y_intercept()
+        # if m0 == m1:
+        #     return None
+        # intersection_x = (b1 - b0) / (m0 - m1)
+        # intersection_y = m0 * intersection_x + b0
+        l1 = sympy_Line(Point(self.start.x, self.start.y), Point(self.end.x, self.end.y))
+        l2 = sympy_Line(Point(other.start.x, other.start.y), Point(other.end.x, other.end.y))
+        intersection_point = intersection(l1, l2)
+        intersection_x, intersection_y = intersection_point[0].x, intersection_point[0].y
         return (intersection_x, intersection_y)
 
     def get_center_coords(self):

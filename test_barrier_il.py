@@ -204,7 +204,7 @@ class TestBarrier(unittest.TestCase):
             r = Receiver(coords=r_coord)
             b = Barrier.Barrier(start=b_start, end=b_end)
 
-            b_ari = b.get_insertion_loss_ARI(s, r, "ARI")
+            b_ari = b.get_insertion_loss(s, r, "ARI")
             b_fres = b.get_insertion_loss(s, r, "Fresnel")
 
             print("TEST NUMBER", i)
@@ -220,7 +220,7 @@ class TestBarrier(unittest.TestCase):
             r.set_coords = sr_line.end
 
             print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
-            b_rotated_ari = b.get_insertion_loss_ARI(s, r, "ARI")
+            b_rotated_ari = b.get_insertion_loss(s, r, "ARI")
             b_rotated_fres = b.get_insertion_loss(s, r, "Fresnel")
 
             if (
@@ -286,10 +286,10 @@ class TestBarrier(unittest.TestCase):
         )
         r2 = Receiver(Coordinate(-2.985686139648712, -9.87970939754626, -4.9))
 
-        b2_ari = b2.get_insertion_loss_ARI(s2, r2, "ARI")
+        b2_ari = b2.get_insertion_loss(s2, r2, "ARI")
         b2_fres = b2.get_insertion_loss(s2, r2, "Fresnel")
 
-        b_ari = b.get_insertion_loss_ARI(s, r, "ARI")
+        b_ari = b.get_insertion_loss(s, r, "ARI")
         b_fres = b.get_insertion_loss(s, r, "Fresnel")
 
         self.assertEqual(b_ari, b2_ari)
@@ -300,16 +300,18 @@ class TestBarrier(unittest.TestCase):
         def rand_db():
             return randint(0, 100)
 
-        ob = OctaveBands(
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-        )
+        def rand_octavebands():
+            return OctaveBands(
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+            )
+        ob = OctaveBands(100, 100, 100, 100, 100, 100, 100, 100)
         dba = ob.get_dBA()
 
         b = Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
