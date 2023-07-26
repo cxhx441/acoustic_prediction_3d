@@ -81,6 +81,7 @@ class Line:
             return (self.end.y - self.start.y) / (self.end.x - self.start.x)
         except ZeroDivisionError:
             return float("inf")
+            # return (self.end.y - self.start.y) / (self.end.x - self.start.x+0.0001) # hack
 
     def get_y_intercept(self) -> float:
         """TODO fix when slope is infinite"""
@@ -90,9 +91,13 @@ class Line:
         return b
 
     def get_xy_intersection(self, other: type["Line"]) -> tuple[float, float]:
-        """returns the intersection coordinates of 2 lines."""
+        """
+        returns the intersection coordinates of 2 lines.
+        TODO would like to do this without sympy.
+        """
+
         # m0, b0 = self.get_xy_slope(), self.get_y_intercept()
-        # m1, b1 = other_line.get_xy_slope(), other_line.get_y_intercept()
+        # m1, b1 = other.get_xy_slope(), other.get_y_intercept()
         # if m0 == m1:
         #     return None
         # intersection_x = (b1 - b0) / (m0 - m1)

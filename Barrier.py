@@ -90,10 +90,10 @@ class Barrier(Line):
         # )
         # intersection_y = m_source2receiver * intersection_x + b_source2receiver
 
-        xy_intersection = self.get_xy_intersection(Line(s, r))
-        if xy_intersection is None: # slopes are equal m0 == m1
-            return 0 # TODO this is a hack to fix a bug. Fix the bug.
-        intersection_x, intersection_y = xy_intersection
+        # xy_intersection = self.get_xy_intersection(Line(s, r))
+        # if xy_intersection is None: # slopes are equal m0 == m1
+        #     return 0 # TODO this is a hack to fix a bug. Fix the bug.
+        intersection_x, intersection_y = self.get_xy_intersection(Line(s, r))
 
         bar_min_z = min(b_z0, b_z1)
         bar_height_difference = abs(b_z0 - b_z1)
