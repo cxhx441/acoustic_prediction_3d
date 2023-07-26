@@ -11,8 +11,18 @@ class Coordinate:
         """returns the x, y, and z coordinates of the point."""
         return self.x, self.y, self.z
 
-    def set_coords(self, x: float, y: float, z: float) -> None:
-        self.x, self.y, self.z = x, y, z
+    def set_coords(self, *args) -> None:
+        """take in x, y, z as floats or Coordinate object"""
+        if len(args) == 1 and isinstance(args[0], Coordinate):
+            coord = args[0]
+            self.x, self.y, self.z = coord.x, coord.y, coord.z
+        elif (
+            len(args) == 3
+            and isinstance(args[0], float)
+            and isinstance(args[1], float)
+            and isinstance(args[2], float)
+        ):
+            self.x, self.y, self.z = args[0], args[1], args[2]
 
     def get_distance(self, other_point) -> float:
         return math.sqrt(
@@ -50,16 +60,16 @@ class Line:
         self.start = start_coords
         self.end = end_coords
 
-    def get_start_coords(self) -> Coordinate:
+    def get_start(self) -> Coordinate:
         return self.start.get_coords()
 
-    def get_end_coords(self) -> Coordinate:
+    def get_end(self) -> Coordinate:
         return self.end.get_coords()
 
-    def set_start_point(self, new_start: Coordinate) -> None:
+    def set_start(self, new_start: Coordinate) -> None:
         self.start = new_start
 
-    def set_end_point(self, new_end: Coordinate) -> None:
+    def set_end(self, new_end: Coordinate) -> None:
         self.end = new_end
 
     def get_length(self) -> float:
@@ -69,20 +79,16 @@ class Line:
         try:
             return (self.end.y - self.start.y) / (self.end.x - self.start.x)
         except ZeroDivisionError:
-            return math.inf
+            return float("inf")
 
     def get_y_intercept(self) -> float:
         """TODO fix when slope is infinite"""
         x, y = self.start.x, self.start.y
         m = self.get_xy_slope()
-        # if m == math.inf:
-        #     return x
         b = y - m * x
         return b
 
-    def get_xy_intersection_of_2_lines(
-        self, other_line: type["Line"]
-    ) -> tuple[float, float]:
+    def get_xy_intersection(self, other_line: type["Line"]) -> tuple[float, float]:
         """returns the intersection coordinates of 2 lines."""
         m0, b0 = self.get_xy_slope(), self.get_y_intercept()
         m1, b1 = other_line.get_xy_slope(), other_line.get_y_intercept()

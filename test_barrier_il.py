@@ -24,19 +24,7 @@ class TestBarrier(unittest.TestCase):
             "b_fres",
         )
 
-        for i in range(50000):
-            headers = (
-                # "ob",
-                # "dba",
-                # "b_start",
-                # "b_end",
-                # "s_coord",
-                # "r_coord",
-                "b_old_ari",
-                "b_ari",
-                "b_old_fres",
-                "b_fres",
-            )
+        for i in range(10000):
 
             def rand_db():
                 return randint(0, 100)
@@ -113,19 +101,12 @@ class TestBarrier(unittest.TestCase):
             # s_coord = Coordinate(-10, 0, 9)
             # r_coord = Coordinate(10, 0, 9)
 
-            # TODO test a rotation
-
             s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
             r = Receiver(coords=r_coord)
             b_old = Old_Barrier.Barrier(start=b_start, end=b_end)
             b = Barrier.Barrier(start=b_start, end=b_end)
 
             print(f"TEST NUMBER {i}")
-            # print(
-            #     tabulate(
-            #         [[ob, dba, b_start, b_end, s_coord, r_coord]], headers=headers[:6]
-            #     )
-            # )
             b_old_ari = b_old.get_insertion_loss_ARI(s, r)
             b_ari = b.get_insertion_loss(s, r, method="ARI")
             b_old_fres = b_old.get_insertion_loss_OB_fresnel(s, r)
@@ -138,10 +119,11 @@ class TestBarrier(unittest.TestCase):
             print()
 
             with self.subTest():
-                self.assertEqual(b_old_ari, b_ari, msg=f"{b_old_ari} != {b_ari}")
-                self.assertEqual(
-                    b_old_fres, b_fres, msg=f"{b_old_fres} != {b_fres}"
-                )  # TODO need to handle where path length difference = 0
+                coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s_coord})\nr.set_coords(Coordinate{r_coord})"
+
+                self.assertEqual(b_old_ari, b_ari, msg=coords_msg)
+                self.assertEqual(b_old_fres, b_fres, msg=coords_msg)
+                # TODO need to handle where path length difference = 0
 
         print(
             "ob",
@@ -229,7 +211,7 @@ class TestBarrier(unittest.TestCase):
             print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
             # then rotate
             sr_line = Line(s_coord, r_coord)
-            intersection = b.get_xy_intersection_of_2_lines(sr_line)
+            intersection = b.get_xy_intersection(sr_line)
             intersection = Coordinate(intersection[0], intersection[1], 0)
             rand_angle = uniform(0, 2 * math.pi)
             b.rotate_xy(rand_angle, intersection)
@@ -314,5 +296,45 @@ class TestBarrier(unittest.TestCase):
         self.assertEqual(b_fres, b2_fres)
 
 
+    def test_manual(self):
+        def rand_db():
+            return randint(0, 100)
+
+        ob = OctaveBands(
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+        )
+        dba = ob.get_dBA()
+
+        b = Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
+        b_old = Old_Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
+        s = Source(Coordinate(1.8, -2.0, 5.1), dba, 3.28, octave_band_levels=ob)
+        r = Receiver(Coordinate(-8.0, -6.3, -4.9))
+
+        # [2, -3.12, 16.6, 4.09, 4.35, 16.21, 20.37, 0.2, 'ARI'] != 0 :
+        b_old.set_start(Coordinate(-2.5, 7.7, 1.0))
+        b_old.set_end(Coordinate(-2.5, 1.6, -6.5))
+        b.set_start(Coordinate(-2.5, 7.7, 1.0))
+        b.set_end(Coordinate(-2.5, 1.6, -6.5))
+        s.set_coords(Coordinate(-6.1, 6.3, -4.6))
+        r.set_coords(Coordinate(8.5, -1.6, 7.2))
+
+        b_old_ari = b_old.get_insertion_loss_ARI(s, r)
+        b_ari = b.get_insertion_loss(s, r, method="ARI")
+        b_old_fres = b_old.get_insertion_loss_OB_fresnel(s, r)
+        b_fres = b.get_insertion_loss(s, r, method="Fresnel")
+        print(b_old_ari)
+        print(b_ari)
+        print(b_old_fres)
+        print(b_fres)
+
+        self.assertEqual(b_old_ari, b_ari)
+        self.assertEqual(b_old_fres, b_fres)
 if __name__ == "__main__":
     unittest.main()

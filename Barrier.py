@@ -8,6 +8,8 @@ import acoustics.decibel
 
 class Barrier(Line):
     def __init__(self, start, end) -> None:
+
+        # hack for when start and end are the same point causing slope issues.
         super().__init__(start, end)
 
     def ARI_il(self, path_length_difference):
@@ -41,6 +43,7 @@ class Barrier(Line):
 
     def get_insertion_loss(self, s: Source, r: Receiver, method: str) -> float:
         """TODO refactor me"""
+
         if method not in ("ARI", "Fresnel"):
             raise ValueError("method must be ARI or Fresnel")
 
@@ -52,17 +55,18 @@ class Barrier(Line):
             # print("source-receiver line and barrier have same slope")
             return 0
 
-        eqmt_x, eqmt_y, eqmt_z = s.get_coords()
-        bar_x0, bar_y0, bar_z0 = self.get_start_coords()
-        bar_x1, bar_y1, bar_z1 = self.get_end_coords()
-        rcvr_x, rcvr_y, rcvr_z = r.get_coords()
+
+        s_x, s_y, s_z = s.get_coords()
+        b_x0, b_y0, b_z0 = self.get_start()
+        b_x1, b_y1, b_z1 = self.get_end()
+        r_x, r_y, r_z = r.get_coords()
 
         # fixing escape on error with same barrier coordinate
-        if bar_x0 == bar_x1:
-            bar_x0 += 0.0001
+        if b_x0 == b_x1:
+            b_x0 += 0.0001
             # print("corrected bar_x0==bar_x1 error")
-        if bar_y0 == bar_y1:
-            bar_y0 += 0.0001
+        if b_y0 == b_y1:
+            b_y0 += 0.0001
             # print("corrected bar_y0==bar_y1 error")
 
         # testing if line of sight is broken along horizontal plane
@@ -70,59 +74,64 @@ class Barrier(Line):
             # print("barrier fails horizontal test")
             return 0
 
-        try:
-            m_source2receiver = (rcvr_y - eqmt_y) / (rcvr_x - eqmt_x)
-        except ZeroDivisionError:
-            return 0
-        try:
-            m_bar_start2end = (bar_y0 - bar_y1) / (bar_x0 - bar_x1)
-        except ZeroDivisionError:
-            return 0
+        # try:
+        #     m_source2receiver = (rcvr_y - eqmt_y) / (rcvr_x - eqmt_x)
+        # except ZeroDivisionError:
+        #     return 0
+        # try:
+        #     m_bar_start2end = (bar_y0 - bar_y1) / (bar_x0 - bar_x1)
+        # except ZeroDivisionError:
+        #     return 0
 
-        b_source2receiver = eqmt_y - (eqmt_x * m_source2receiver)
-        b_bar_start2end = bar_y0 - (bar_x0 * m_bar_start2end)
-        intersection_x = (b_bar_start2end - b_source2receiver) / (
-            m_source2receiver - m_bar_start2end
-        )
-        intersection_y = m_source2receiver * intersection_x + b_source2receiver
+        # b_source2receiver = eqmt_y - (eqmt_x * m_source2receiver)
+        # b_bar_start2end = bar_y0 - (bar_x0 * m_bar_start2end)
+        # intersection_x = (b_bar_start2end - b_source2receiver) / (
+        #     m_source2receiver - m_bar_start2end
+        # )
+        # intersection_y = m_source2receiver * intersection_x + b_source2receiver
 
-        bar_min_z = min(bar_z0, bar_z1)
-        bar_height_difference = abs(bar_z0 - bar_z1)
-        bar_length = utils.distance_formula(x0=bar_x0, y0=bar_y0, x1=bar_x1, y1=bar_y1)
+        xy_intersection = self.get_xy_intersection(Line(s, r))
+        if xy_intersection is None: # slopes are equal m0 == m1
+            return 0 # TODO this is a hack to fix a bug. Fix the bug.
+        intersection_x, intersection_y = xy_intersection
+
+        bar_min_z = min(b_z0, b_z1)
+        bar_height_difference = abs(b_z0 - b_z1)
+        bar_length = utils.distance_formula(x0=b_x0, y0=b_y0, x1=b_x1, y1=b_y1)
         bar_slope = bar_height_difference / bar_length
-        if bar_z0 <= bar_z1:
+        if b_z0 <= b_z1:
             bar_dist2barxpoint = utils.distance_formula(
-                x0=intersection_x, y0=intersection_y, x1=bar_x0, y1=bar_y0
+                x0=intersection_x, y0=intersection_y, x1=b_x0, y1=b_y0
             )
         else:
             bar_dist2barxpoint = utils.distance_formula(
-                x0=intersection_x, y0=intersection_y, x1=bar_x1, y1=bar_y1
+                x0=intersection_x, y0=intersection_y, x1=b_x1, y1=b_y1
             )
 
         bar_height_to_use = bar_slope * bar_dist2barxpoint + bar_min_z
 
         # testing if line of sight is broken vertically
-        if bar_height_to_use < eqmt_z and bar_height_to_use < rcvr_z:
+        if bar_height_to_use < s_z and bar_height_to_use < r_z:
             # print("barrier fails easy vertical test")
             return 0
 
         distance_source2receiver_horizontal = utils.distance_formula(
-            x0=eqmt_x, y0=eqmt_y, x1=rcvr_x, y1=rcvr_y
+            x0=s_x, y0=s_y, x1=r_x, y1=r_y
         )
         distance_source2bar_horizontal = utils.distance_formula(
-            x0=eqmt_x, y0=eqmt_y, x1=intersection_x, y1=intersection_y
+            x0=s_x, y0=s_y, x1=intersection_x, y1=intersection_y
         )
         distance_barrier2receiever_straight = (
             distance_source2receiver_horizontal - distance_source2bar_horizontal
         )
         distance_source2receiver_propogation = math.sqrt(
-            distance_source2receiver_horizontal**2 + (rcvr_z - eqmt_z) ** 2
+            distance_source2receiver_horizontal**2 + (r_z - s_z) ** 2
         )
         distance_source2barrier_top = math.sqrt(
-            (bar_height_to_use - eqmt_z) ** 2 + distance_source2bar_horizontal**2
+            (bar_height_to_use - s_z) ** 2 + distance_source2bar_horizontal**2
         )
         distance_receiver2barrier_top = math.sqrt(
-            (bar_height_to_use - rcvr_z) ** 2 + distance_barrier2receiever_straight**2
+            (bar_height_to_use - r_z) ** 2 + distance_barrier2receiever_straight**2
         )
         path_length_difference = (
             distance_source2barrier_top
@@ -135,8 +144,8 @@ class Barrier(Line):
             return 0
 
         # testing if line of sight is broken along VERTICAL plane
-        eqmt_point = utils.Point(0, eqmt_z)
-        receiver_point = utils.Point(distance_source2receiver_horizontal, rcvr_z)
+        eqmt_point = utils.Point(0, s_z)
+        receiver_point = utils.Point(distance_source2receiver_horizontal, r_z)
         bar_start_point = utils.Point(distance_source2bar_horizontal, 0)
         bar_end_point = utils.Point(distance_source2bar_horizontal, bar_height_to_use)
         if not utils.doIntersect(
