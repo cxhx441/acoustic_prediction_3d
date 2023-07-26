@@ -1,4 +1,4 @@
-from Geometry import Line, Coordinate
+from sympy import Point, Line
 from Source import Source  # for type hinting
 from Receiver import Receiver  # for type hinting
 import utils  # refactor to not need this.
@@ -9,10 +9,10 @@ import acoustics.decibel
 class Barrier(Line):
     def __init__(
         self,
-        start_coords: Coordinate,
-        end_coords: Coordinate,
+        start: Point,
+        end: Point,
     ) -> None:
-        super().__init__(start_coords, end_coords)
+        super().__init__(start, end)
 
     def ARI_il(self, path_length_difference):
         pld = path_length_difference

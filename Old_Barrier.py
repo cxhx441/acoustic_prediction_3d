@@ -1,6 +1,6 @@
-from Geometry import Line
-from Source import Source  # for type hinting
-from Receiver import Receiver  # for type hinting
+from Old_Geometry import Line
+from Old_Source import Source  # for type hinting
+from Old_Receiver import Receiver  # for type hinting
 import utils  # refactor to not need this.
 import math
 import acoustics.decibel

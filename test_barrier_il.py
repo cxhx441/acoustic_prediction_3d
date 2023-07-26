@@ -1,6 +1,6 @@
 import unittest
 import Barrier
-import Barrier_old
+import Old_Barrier
 from Source import Source, OctaveBands
 from Receiver import Receiver
 from random import randint, uniform
@@ -115,10 +115,10 @@ class TestBarrier(unittest.TestCase):
 
             # TODO test a rotation
 
-            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-            r = Receiver(coords=r_coord)
-            b_old = Barrier_old.Barrier(start_coords=b_start, end_coords=b_end)
-            b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+            s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(point=r_coord)
+            b_old = Old_Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+            b = Barrier.Barrier(start=b_start, end=b_end)
 
             print(f"TEST NUMBER {i}")
             print(
@@ -234,9 +234,9 @@ class TestBarrier(unittest.TestCase):
             # s_coord = Coordinate(-10, 0.001, 9)
             # r_coord = Coordinate(10, 0, 9)
 
-            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-            r = Receiver(coords=r_coord)
-            b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+            s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(point=r_coord)
+            b = Barrier.Barrier(start=b_start, end=b_end)
 
             b_ari = b.get_insertion_loss_ARI(s, r)
             b_fres = b.get_insertion_loss_OB_fresnel(s, r)
