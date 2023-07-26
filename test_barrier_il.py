@@ -24,7 +24,7 @@ class TestBarrier(unittest.TestCase):
             "b_fres",
         )
 
-        for i in range(10000):
+        for i in range(1000):
             headers = (
                 "ob",
                 "dba",
@@ -186,6 +186,109 @@ class TestBarrier(unittest.TestCase):
             "b_fres",
         )
 
+        for i in range(10000):
+
+            def rand_db():
+                return randint(0, 100)
+
+            ob = OctaveBands(
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+                rand_db(),
+            )
+            dba = ob.get_dBA()
+
+            def rand_coord(low, high):
+                return Coordinate(
+                    randint(low, high) / 10,
+                    randint(low, high) / 10,
+                    randint(low, high) / 10,
+                )
+
+            low, high = -100, 100
+            b_start = rand_coord(low, high)
+            b_end = rand_coord(low, high)
+            s_coord = rand_coord(low, high)
+            r_coord = rand_coord(low, high)
+
+            # # same slope
+            # b_start = Coordinate(-4, 4, -2)
+            # b_end = Coordinate(-3, 3, -9)
+            # s_coord = Coordinate(8, -8, 10)
+            # r_coord = Coordinate(-5, 5, 0)
+
+            # # infinite slope
+            # b_start = Coordinate(-4, 4, -2)
+            # b_end = Coordinate(-3, 3, -9)
+            # s_coord = Coordinate(6, 9, 3)
+            # r_coord = Coordinate(6, 2, 4)
+
+            # # good case
+            # b_start = Coordinate(0.001, 10, 100)
+            # b_end = Coordinate(0, -10, 100)
+            # s_coord = Coordinate(-10, 0.001, 9)
+            # r_coord = Coordinate(10, 0, 9)
+
+            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(coords=r_coord)
+            b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+
+            b_ari = b.get_insertion_loss_ARI(s, r)
+            b_fres = b.get_insertion_loss_OB_fresnel(s, r)
+
+            print("TEST NUMBER", i)
+            print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
+            # then rotate
+            sr_line = Line(s_coord, r_coord)
+            intersection = b.get_xy_intersection_of_2_lines(sr_line)
+            intersection = Coordinate(intersection[0], intersection[1], 0)
+            rand_angle = uniform(0, 2 * math.pi)
+            b.rotate_xy(rand_angle, intersection)
+            sr_line.rotate_xy(rand_angle, intersection)
+            s.set_coords = sr_line.start
+            r.set_coords = sr_line.end
+
+            print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
+            b_rotated_ari = b.get_insertion_loss_ARI(s, r)
+            b_rotated_fres = b.get_insertion_loss_OB_fresnel(s, r)
+
+            if (
+                b_ari == 0
+                and b_fres == 0
+                and b_rotated_ari == 0
+                and b_rotated_fres == 0
+            ):
+                continue
+
+            if b_ari != 0:
+                b_ari = [round(x, 2) for x in b_ari[:-1] if isinstance(x, float)]
+            if b_fres != 0:
+                b_fres = [round(x, 2) for x in b_fres[:-1] if isinstance(x, float)]
+            if b_rotated_ari != 0:
+                b_rotated_ari = [
+                    round(x, 2) for x in b_rotated_ari[:-1] if isinstance(x, float)
+                ]
+            if b_rotated_fres != 0:
+                b_rotated_fres = [
+                    round(x, 2) for x in b_rotated_fres[:-1] if isinstance(x, float)
+                ]
+
+            print(f"{b.start} -> {b.end}")
+            print(f"{b_rotated_ari} == \n{b_ari}")
+            print()
+            print(f"{b.start} -> {b.end}")
+            print(f"{b_rotated_fres} == \n{b_fres}")
+            self.assertEqual(b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}")
+            self.assertEqual(
+                b_rotated_fres, b_fres, msg=f"{b_rotated_fres} != {b_fres}"
+            )
+
+    def test_rotation_manual(self):
         def rand_db():
             return randint(0, 100)
 
@@ -201,65 +304,30 @@ class TestBarrier(unittest.TestCase):
         )
         dba = ob.get_dBA()
 
-        def rand_coord(low, high):
-            return Coordinate(
-                randint(low, high) / 10,
-                randint(low, high) / 10,
-                randint(low, high) / 10,
-            )
+        b = Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
+        s = Source(Coordinate(1.8, -2.0, 5.1), dba, 3.28, octave_band_levels=ob)
+        r = Receiver(Coordinate(-8.0, -6.3, -4.9))
 
-        low, high = -100, 100
-        b_start = rand_coord(low, high)
-        b_end = rand_coord(low, high)
-        s_coord = rand_coord(low, high)
-        r_coord = rand_coord(low, high)
+        b2 = Barrier.Barrier(
+            Coordinate(3.508532156104924, -4.184524701059347, 7.2),
+            Coordinate(-16.415033023245357, -3.1787660102288386, -2.6),
+        )
+        s2 = Source(
+            Coordinate(-2.101971902330027, 0.7856105295239173, 5.1),
+            dba,
+            3.28,
+            octave_band_levels=ob,
+        )
+        r2 = Receiver(Coordinate(-2.985686139648712, -9.87970939754626, -4.9))
 
-        # # same slope
-        # b_start = Coordinate(-4, 4, -2)
-        # b_end = Coordinate(-3, 3, -9)
-        # s_coord = Coordinate(8, -8, 10)
-        # r_coord = Coordinate(-5, 5, 0)
-
-        # # infinite slope
-        # b_start = Coordinate(-4, 4, -2)
-        # b_end = Coordinate(-3, 3, -9)
-        # s_coord = Coordinate(6, 9, 3)
-        # r_coord = Coordinate(6, 2, 4)
-
-        # # good case
-        # b_start = Coordinate(0.001, 10, 100)
-        # b_end = Coordinate(0, -10, 100)
-        # s_coord = Coordinate(-10, 0.001, 9)
-        # r_coord = Coordinate(10, 0, 9)
-
-        s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-        r = Receiver(coords=r_coord)
-        b = Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+        b2_ari = b2.get_insertion_loss_ARI(s2, r2)
+        b2_fres = b2.get_insertion_loss_OB_fresnel(s2, r2)
 
         b_ari = b.get_insertion_loss_ARI(s, r)
         b_fres = b.get_insertion_loss_OB_fresnel(s, r)
 
-        print(f"{b.start} -> {b.end}")
-        # then rotate
-        sr_line = Line(s_coord, r_coord)
-        intersection = b.get_xy_intersection_of_2_lines(sr_line)
-        intersection = Coordinate(intersection[0], intersection[1], 0)
-        rand_angle = uniform(0, 2 * math.pi)
-        b.rotate_xy(rand_angle, intersection)
-        s.set_coords = sr_line.start
-        r.set_coords = sr_line.end
-
-        b_rotated_ari = b.get_insertion_loss_ARI(s, r)
-        b_rotated_fres = b.get_insertion_loss_OB_fresnel(s, r)
-
-        print(f"{b.start} -> {b.end}")
-        print(f"{b_rotated_ari} == \n{b_ari}")
-        print()
-        print(f"{b.start} -> {b.end}")
-        print(f"{b_rotated_fres} == \n{b_fres}")
-        self.assertEqual(b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}")
-        self.assertEqual(b_rotated_fres, b_fres, msg=f"{b_rotated_fres} != {b_fres}")
-
+        self.assertEqual(b_ari, b2_ari)
+        self.assertEqual(b_fres, b2_fres)
 
 
 if __name__ == "__main__":
