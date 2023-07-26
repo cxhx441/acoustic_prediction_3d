@@ -10,7 +10,7 @@ import math
 
 
 class TestBarrier(unittest.TestCase):
-    def test_ari_il(self):
+    def test_il(self):
         print(
             # "ob",
             # "dba",
@@ -320,12 +320,20 @@ class TestBarrier(unittest.TestCase):
         r = Receiver(Coordinate(-8.0, -6.3, -4.9))
 
         # [2, -3.12, 16.6, 4.09, 4.35, 16.21, 20.37, 0.2, 'ARI'] != 0 :
+        # vertical line errors
         b_old.set_start(Coordinate(-2.5, 7.7, 1.0))
         b_old.set_end(Coordinate(-2.5, 1.6, -6.5))
         b.set_start(Coordinate(-2.5, 7.7, 1.0))
         b.set_end(Coordinate(-2.5, 1.6, -6.5))
         s.set_coords(Coordinate(-6.1, 6.3, -4.6))
         r.set_coords(Coordinate(8.5, -1.6, 7.2))
+
+        b_old.set_start(Coordinate(6.1, -3.3, -5.5))
+        b_old.set_end(Coordinate(-6.5, 0.5, -6.9))
+        b.set_start(Coordinate(6.1, -3.3, -5.5))
+        b.set_end(Coordinate(-6.5, 0.5, -6.9))
+        s.set_coords(Coordinate(1.3, -9.6, 0.7))
+        r.set_coords(Coordinate(1.3, 2.0, -6.9))
 
         b_old_ari = b_old.get_insertion_loss_ARI(s, r)
         b_ari = b.get_insertion_loss(s, r, method="ARI")
@@ -338,5 +346,23 @@ class TestBarrier(unittest.TestCase):
 
         self.assertEqual(b_old_ari, b_ari)
         self.assertEqual(b_old_fres, b_fres)
+
+    def parallel(self):
+        """barrier and sr_line are parallel and not coincident"""
+        pass
+
+    def coincident(self):
+        """barrier and sr_line are coincident -- May have different lengths"""
+        # should be covered by parallel test
+        pass
+
+    def vertex_part_of_other_line(self):
+        """barrier or sr_line start/end point is part of the other line"""
+        pass
+
+    def shared_vertex(self):
+        """barrier and sr_line share a vertex"""
+        pass
+
 if __name__ == "__main__":
     unittest.main()
