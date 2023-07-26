@@ -46,18 +46,18 @@ class Barrier(Line):
     def get_insertion_loss_ARI(self, s: Source, r: Receiver) -> float:
         """TODO refactor me"""
 
-        if self.lies_on_point(s) or self.lies_on_point(r):
-            print("source or receiver is on barrier start or end point")
+        if self.contains(s) or self.contains(r) or Line(s, r).contains(self.start) or Line(s, r).contains(self.end):
+            print("source or receiver is on barrier or barrier start/end is on source-receiver line")
             return 0
 
-        if self.get_xy_slope() == Line(s, r).get_xy_slope():
-            print("source-receiver line and barrier have same slope")
+        if not Line.are_concurrent(self, Line(s, r)):
+            print("non-intersecting")
             return 0
 
-        eqmt_x, eqmt_y, eqmt_z = s.get_coords()
-        bar_x0, bar_y0, bar_z0 = self.get_start_coords()
-        bar_x1, bar_y1, bar_z1 = self.get_end_coords()
-        rcvr_x, rcvr_y, rcvr_z = r.get_coords()
+        eqmt_x, eqmt_y, eqmt_z = s.coordinates()
+        bar_x0, bar_y0, bar_z0 = self.start.coordinates()
+        bar_x1, bar_y1, bar_z1 = self.end.coordinates()
+        rcvr_x, rcvr_y, rcvr_z = r.coordinates()
 
         # fixing escape on error with same barrier coordinate
         if bar_x0 == bar_x1:
