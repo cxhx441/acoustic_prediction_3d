@@ -1,14 +1,14 @@
-from Old_Geometry import Line
-from Old_Source import Source  # for type hinting
-from Old_Receiver import Receiver  # for type hinting
+from Geometry import Line
+from Source import Source  # for type hinting
+from Receiver import Receiver  # for type hinting
 import utils  # refactor to not need this.
 import math
 import acoustics.decibel
 
 
 class Barrier(Line):
-    def __init__(self, start_coords, end_coords) -> None:
-        super().__init__(start_coords, end_coords)
+    def __init__(self, start, end) -> None:
+        super().__init__(start, end)
 
     def ARI_il(self, path_length_difference):
         pld = path_length_difference
@@ -43,11 +43,11 @@ class Barrier(Line):
         """TODO refactor me"""
 
         if self.lies_on_point(s) or self.lies_on_point(r):
-            print("source or receiver is on barrier start or end point")
+            #print("source or receiver is on barrier start or end point")
             return 0
 
         if self.get_xy_slope() == Line(s, r).get_xy_slope():
-            print("source-receiver line and barrier have same slope")
+            #print("source-receiver line and barrier have same slope")
             return 0
 
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
@@ -58,10 +58,10 @@ class Barrier(Line):
         # fixing escape on error with same barrier coordinate
         if bar_x0 == bar_x1:
             bar_x0 += 0.0001
-            print("corrected bar_x0==bar_x1 error")
+            #print("corrected bar_x0==bar_x1 error")
         if bar_y0 == bar_y1:
             bar_y0 += 0.0001
-            print("corrected bar_y0==bar_y1 error")
+            #print("corrected bar_y0==bar_y1 error")
         # testing if line of sight is broken along HORIZONTAL plane
         eqmt_point = utils.Point(eqmt_x, eqmt_y)
         receiver_point = utils.Point(rcvr_x, rcvr_y)
@@ -70,7 +70,7 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            print("barrier fails horizontal test")
+            #print("barrier fails horizontal test")
             return 0
 
         try:
@@ -106,7 +106,7 @@ class Barrier(Line):
 
         # testing if line of sight is broken vertically
         if bar_height_to_use < eqmt_z and bar_height_to_use < rcvr_z:
-            print("barrier fails easy vertical test")
+            #print("barrier fails easy vertical test")
             return 0
 
         distance_source2receiver_horizontal = utils.distance_formula(
@@ -134,7 +134,7 @@ class Barrier(Line):
         )
 
         if path_length_difference <= 0:
-            print("pld <= 0")
+            #print("pld <= 0")
             return 0
 
         # testing if line of sight is broken along VERTICAL plane
@@ -145,7 +145,7 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            print("barrier fails vertical test")
+            #print("barrier fails vertical test")
             return 0
 
         pld = path_length_difference
@@ -153,13 +153,13 @@ class Barrier(Line):
 
         return [
             barrier_IL,
-            bar_height_to_use,
-            distance_source2receiver_horizontal,
-            distance_source2bar_horizontal,
-            distance_source2barrier_top,
-            distance_receiver2barrier_top,
-            distance_source2receiver_propogation,
-            path_length_difference,
+            round(bar_height_to_use, 2),
+            round(distance_source2receiver_horizontal, 2),
+            round(distance_source2bar_horizontal, 2),
+            round(distance_source2barrier_top, 2),
+            round(distance_receiver2barrier_top, 2),
+            round(distance_source2receiver_propogation, 2),
+            round(path_length_difference, 2),
             "ARI",
         ]
 
@@ -167,11 +167,11 @@ class Barrier(Line):
         """TODO refactor me"""
 
         if self.lies_on_point(s) or self.lies_on_point(r):
-            print("source or receiver is on barrier start or end point")
+            #print("source or receiver is on barrier start or end point")
             return 0
 
         if self.get_xy_slope() == Line(s, r).get_xy_slope():
-            print("source-receiver line and barrier have same slope")
+            #print("source-receiver line and barrier have same slope")
             return 0
 
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
@@ -193,10 +193,10 @@ class Barrier(Line):
         # fixing escape on error with same barrier coordinate
         if bar_x0 == bar_x1:
             bar_x0 += 0.0001
-            print("corrected bar_x0==bar_x1 error")
+            #print("corrected bar_x0==bar_x1 error")
         if bar_y0 == bar_y1:
             bar_y0 += 0.0001
-            print("corrected bar_y0==bar_y1 error")
+            #print("corrected bar_y0==bar_y1 error")
         ob_levels_list = [hz63, hz125, hz250, hz500, hz1000, hz2000, hz4000, hz8000]
         ob_bands_list = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
         # testing if line of sight is broken along horizontal plane
@@ -207,7 +207,7 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            print("barrier fails horizontal test")
+            #print("barrier fails horizontal test")
             return 0
         try:
             m_source2receiver = (rcvr_y - eqmt_y) / (rcvr_x - eqmt_x)
@@ -242,7 +242,7 @@ class Barrier(Line):
 
         # testing if line of sight is broken vertically
         if bar_height_to_use < eqmt_z and bar_height_to_use < rcvr_z:
-            print("barrier fails easy vertical test")
+            #print("barrier fails easy vertical test")
             return 0
 
         distance_source2receiver_horizontal = utils.distance_formula(
@@ -270,7 +270,7 @@ class Barrier(Line):
         )
 
         if path_length_difference <= 0:
-            print("pld <= 0")
+            #print("pld <= 0")
             return 0
 
         # testing if line of sight is broken along VERTICAL plane
@@ -281,7 +281,7 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            print("barrier fails vertical test")
+            #print("barrier fails vertical test")
             return 0
 
         speed_of_sound = 1128
@@ -325,12 +325,12 @@ class Barrier(Line):
 
         return [
             round(barrier_IL, 1),
-            bar_height_to_use,
-            distance_source2receiver_horizontal,
-            distance_source2bar_horizontal,
-            distance_source2barrier_top,
-            distance_receiver2barrier_top,
-            distance_source2receiver_propogation,
-            path_length_difference,
+            round(bar_height_to_use, 2),
+            round(distance_source2receiver_horizontal, 2),
+            round(distance_source2bar_horizontal, 2),
+            round(distance_source2barrier_top, 2),
+            round(distance_receiver2barrier_top, 2),
+            round(distance_source2receiver_propogation, 2),
+            round(path_length_difference, 2),
             "OB-Fresnel",
         ]

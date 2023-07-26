@@ -1,5 +1,5 @@
-from sympy import Point
-from math import log10
+from Geometry import Coordinate
+import math
 
 
 class OctaveBands:
@@ -34,21 +34,21 @@ class OctaveBands:
         dBA = 0
         for lvl in self.get_OB_A_weigthed_sound_levels():
             dBA += 10 ** (lvl / 10)
-        return 10 * log10(dBA)
+        return 10 * math.log10(dBA)
 
     def __str__(self):
         return str(self.get_OB_sound_levels())
 
 
-class Source(Point):
+class Source(Coordinate):
     def __init__(
         self,
-        point: Point,
+        coords: Coordinate,
         dBA: float,
         ref_dist: float,
         octave_band_levels: OctaveBands = None,
     ):
-        super().__init__(point.x, point.y, point.z)
+        super().__init__(coords.x, coords.y, coords.z)
         self.dBA = dBA  # the dBA level of this source
         self.reference_distance = ref_dist
         self.octave_band_levels = octave_band_levels

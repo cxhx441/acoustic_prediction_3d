@@ -12,26 +12,26 @@ import math
 class TestBarrier(unittest.TestCase):
     def test_ari_il(self):
         print(
-            "ob",
-            "dba",
-            "b_start",
-            "b_end",
-            "s_coord",
-            "r_coord",
+            # "ob",
+            # "dba",
+            # "b_start",
+            # "b_end",
+            # "s_coord",
+            # "r_coord",
             "b_old_ari",
             "b_ari",
             "b_old_fres",
             "b_fres",
         )
 
-        for i in range(1000):
+        for i in range(10000):
             headers = (
-                "ob",
-                "dba",
-                "b_start",
-                "b_end",
-                "s_coord",
-                "r_coord",
+                # "ob",
+                # "dba",
+                # "b_start",
+                # "b_end",
+                # "s_coord",
+                # "r_coord",
                 "b_old_ari",
                 "b_ari",
                 "b_old_fres",
@@ -115,41 +115,25 @@ class TestBarrier(unittest.TestCase):
 
             # TODO test a rotation
 
-            s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-            r = Receiver(point=r_coord)
-            b_old = Old_Barrier.Barrier(start_coords=b_start, end_coords=b_end)
+            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(coords=r_coord)
+            b_old = Old_Barrier.Barrier(start=b_start, end=b_end)
             b = Barrier.Barrier(start=b_start, end=b_end)
 
             print(f"TEST NUMBER {i}")
-            print(
-                tabulate(
-                    [[ob, dba, b_start, b_end, s_coord, r_coord]], headers=headers[:6]
-                )
-            )
+            # print(
+            #     tabulate(
+            #         [[ob, dba, b_start, b_end, s_coord, r_coord]], headers=headers[:6]
+            #     )
+            # )
             b_old_ari = b_old.get_insertion_loss_ARI(s, r)
-            b_ari = b.get_insertion_loss_ARI(s, r)
+            b_ari = b.get_insertion_loss(s, r, method="ARI")
             b_old_fres = b_old.get_insertion_loss_OB_fresnel(s, r)
-            b_fres = b.get_insertion_loss_OB_fresnel(s, r)
-            print(
-                tabulate(
-                    [
-                        [
-                            ob,
-                            dba,
-                            b_start,
-                            b_end,
-                            s_coord,
-                            r_coord,
-                            b_old_ari,
-                            b_ari,
-                            b_old_fres,
-                            b_fres,
-                        ]
-                    ],
-                    headers=headers,
-                )
-            )
-            print()
+            b_fres = b.get_insertion_loss(s, r, method="Fresnel")
+            print(b_old_ari)
+            print(b_ari)
+            print(b_old_fres)
+            print(b_fres)
             print()
             print()
 
@@ -234,12 +218,12 @@ class TestBarrier(unittest.TestCase):
             # s_coord = Coordinate(-10, 0.001, 9)
             # r_coord = Coordinate(10, 0, 9)
 
-            s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-            r = Receiver(point=r_coord)
+            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(coords=r_coord)
             b = Barrier.Barrier(start=b_start, end=b_end)
 
-            b_ari = b.get_insertion_loss_ARI(s, r)
-            b_fres = b.get_insertion_loss_OB_fresnel(s, r)
+            b_ari = b.get_insertion_loss_ARI(s, r, "ARI")
+            b_fres = b.get_insertion_loss(s, r, "Fresnel")
 
             print("TEST NUMBER", i)
             print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
@@ -254,8 +238,8 @@ class TestBarrier(unittest.TestCase):
             r.set_coords = sr_line.end
 
             print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
-            b_rotated_ari = b.get_insertion_loss_ARI(s, r)
-            b_rotated_fres = b.get_insertion_loss_OB_fresnel(s, r)
+            b_rotated_ari = b.get_insertion_loss_ARI(s, r, "ARI")
+            b_rotated_fres = b.get_insertion_loss(s, r, "Fresnel")
 
             if (
                 b_ari == 0
@@ -320,11 +304,11 @@ class TestBarrier(unittest.TestCase):
         )
         r2 = Receiver(Coordinate(-2.985686139648712, -9.87970939754626, -4.9))
 
-        b2_ari = b2.get_insertion_loss_ARI(s2, r2)
-        b2_fres = b2.get_insertion_loss_OB_fresnel(s2, r2)
+        b2_ari = b2.get_insertion_loss_ARI(s2, r2, "ARI")
+        b2_fres = b2.get_insertion_loss(s2, r2, "Fresnel")
 
-        b_ari = b.get_insertion_loss_ARI(s, r)
-        b_fres = b.get_insertion_loss_OB_fresnel(s, r)
+        b_ari = b.get_insertion_loss_ARI(s, r, "ARI")
+        b_fres = b.get_insertion_loss(s, r, "Fresnel")
 
         self.assertEqual(b_ari, b2_ari)
         self.assertEqual(b_fres, b2_fres)

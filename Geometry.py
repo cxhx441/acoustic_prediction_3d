@@ -46,9 +46,9 @@ class Coordinate:
 class Line:
     """A line object that can be used to calculate slope, length, and angle."""
 
-    def __init__(self, start_coords: Coordinate, end_coords: Coordinate) -> None:
-        self.start = start_coords
-        self.end = end_coords
+    def __init__(self, start: Coordinate, end: Coordinate) -> None:
+        self.start = start
+        self.end = end
 
     def get_start_coords(self) -> Coordinate:
         return self.start.get_coords()

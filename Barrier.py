@@ -1,4 +1,4 @@
-from sympy import Point, Line
+from Geometry import Line
 from Source import Source  # for type hinting
 from Receiver import Receiver  # for type hinting
 import utils  # refactor to not need this.
@@ -7,11 +7,7 @@ import acoustics.decibel
 
 
 class Barrier(Line):
-    def __init__(
-        self,
-        start: Point,
-        end: Point,
-    ) -> None:
+    def __init__(self, start, end) -> None:
         super().__init__(start, end)
 
     def ARI_il(self, path_length_difference):
@@ -43,166 +39,33 @@ class Barrier(Line):
 
         return barrier_IL
 
-    def get_insertion_loss_ARI(self, s: Source, r: Receiver) -> float:
+
+    def get_insertion_loss(self, s: Source, r: Receiver, method: str) -> float:
         """TODO refactor me"""
-
-        if self.contains(s) or self.contains(r) or Line(s, r).contains(self.start) or Line(s, r).contains(self.end):
-            print("source or receiver is on barrier or barrier start/end is on source-receiver line")
-            return 0
-
-        if not Line.are_concurrent(self, Line(s, r)):
-            print("non-intersecting")
-            return 0
-
-        eqmt_x, eqmt_y, eqmt_z = s.coordinates()
-        bar_x0, bar_y0, bar_z0 = self.start.coordinates()
-        bar_x1, bar_y1, bar_z1 = self.end.coordinates()
-        rcvr_x, rcvr_y, rcvr_z = r.coordinates()
-
-        # fixing escape on error with same barrier coordinate
-        if bar_x0 == bar_x1:
-            bar_x0 += 0.0001
-            print("corrected bar_x0==bar_x1 error")
-        if bar_y0 == bar_y1:
-            bar_y0 += 0.0001
-            print("corrected bar_y0==bar_y1 error")
-        # testing if line of sight is broken along HORIZONTAL plane
-        eqmt_point = utils.Point(eqmt_x, eqmt_y)
-        receiver_point = utils.Point(rcvr_x, rcvr_y)
-        bar_start_point = utils.Point(bar_x0, bar_y0)
-        bar_end_point = utils.Point(bar_x1, bar_y1)
-        if not utils.doIntersect(
-            eqmt_point, receiver_point, bar_start_point, bar_end_point
-        ):
-            print("barrier fails horizontal test")
-            return 0
-
-        try:
-            m_source2receiver = (rcvr_y - eqmt_y) / (rcvr_x - eqmt_x)
-        except ZeroDivisionError:
-            return 0
-        try:
-            m_bar_start2end = (bar_y0 - bar_y1) / (bar_x0 - bar_x1)
-        except ZeroDivisionError:
-            return 0
-
-        b_source2receiver = eqmt_y - (eqmt_x * m_source2receiver)
-        b_bar_start2end = bar_y0 - (bar_x0 * m_bar_start2end)
-        intersection_x = (b_bar_start2end - b_source2receiver) / (
-            m_source2receiver - m_bar_start2end
-        )
-        intersection_y = m_source2receiver * intersection_x + b_source2receiver
-
-        bar_min_z = min(bar_z0, bar_z1)
-        bar_height_difference = abs(bar_z0 - bar_z1)
-        bar_length = utils.distance_formula(x0=bar_x0, y0=bar_y0, x1=bar_x1, y1=bar_y1)
-        bar_slope = bar_height_difference / bar_length
-        if bar_z0 <= bar_z1:
-            bar_dist2barxpoint = utils.distance_formula(
-                x0=intersection_x, y0=intersection_y, x1=bar_x0, y1=bar_y0
-            )
-        else:
-            bar_dist2barxpoint = utils.distance_formula(
-                x0=intersection_x, y0=intersection_y, x1=bar_x1, y1=bar_y1
-            )
-
-        bar_height_to_use = bar_slope * bar_dist2barxpoint + bar_min_z
-
-        # testing if line of sight is broken vertically
-        if bar_height_to_use < eqmt_z and bar_height_to_use < rcvr_z:
-            print("barrier fails easy vertical test")
-            return 0
-
-        distance_source2receiver_horizontal = utils.distance_formula(
-            x0=eqmt_x, y0=eqmt_y, x1=rcvr_x, y1=rcvr_y
-        )
-        distance_source2bar_horizontal = utils.distance_formula(
-            x0=eqmt_x, y0=eqmt_y, x1=intersection_x, y1=intersection_y
-        )
-        distance_barrier2receiever_straight = (
-            distance_source2receiver_horizontal - distance_source2bar_horizontal
-        )
-        distance_source2receiver_propogation = math.sqrt(
-            distance_source2receiver_horizontal**2 + (rcvr_z - eqmt_z) ** 2
-        )
-        distance_source2barrier_top = math.sqrt(
-            (bar_height_to_use - eqmt_z) ** 2 + distance_source2bar_horizontal**2
-        )
-        distance_receiver2barrier_top = math.sqrt(
-            (bar_height_to_use - rcvr_z) ** 2 + distance_barrier2receiever_straight**2
-        )
-        path_length_difference = (
-            distance_source2barrier_top
-            + distance_receiver2barrier_top
-            - distance_source2receiver_propogation
-        )
-
-        if path_length_difference <= 0:
-            print("pld <= 0")
-            return 0
-
-        # testing if line of sight is broken along VERTICAL plane
-        eqmt_point = utils.Point(0, eqmt_z)
-        receiver_point = utils.Point(distance_source2receiver_horizontal, rcvr_z)
-        bar_start_point = utils.Point(distance_source2bar_horizontal, 0)
-        bar_end_point = utils.Point(distance_source2bar_horizontal, bar_height_to_use)
-        if not utils.doIntersect(
-            eqmt_point, receiver_point, bar_start_point, bar_end_point
-        ):
-            print("barrier fails vertical test")
-            return 0
-
-        pld = path_length_difference
-        barrier_IL = self.ARI_il(pld)
-
-        return [
-            barrier_IL,
-            bar_height_to_use,
-            distance_source2receiver_horizontal,
-            distance_source2bar_horizontal,
-            distance_source2barrier_top,
-            distance_receiver2barrier_top,
-            distance_source2receiver_propogation,
-            path_length_difference,
-            "ARI",
-        ]
-
-    def get_insertion_loss_OB_fresnel(self, s: Source, r: Receiver) -> float:
-        """TODO refactor me"""
+        if method not in ('ARI', 'Fresnel'):
+            raise ValueError('method must be ARI or Fresnel')
 
         if self.lies_on_point(s) or self.lies_on_point(r):
-            print("source or receiver is on barrier start or end point")
+            #print("source or receiver is on barrier start or end point")
             return 0
 
         if self.get_xy_slope() == Line(s, r).get_xy_slope():
-            print("source-receiver line and barrier have same slope")
+            #print("source-receiver line and barrier have same slope")
             return 0
 
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
         bar_x0, bar_y0, bar_z0 = self.get_start_coords()
         bar_x1, bar_y1, bar_z1 = self.get_end_coords()
         rcvr_x, rcvr_y, rcvr_z = r.get_coords()
-        (
-            hz63,
-            hz125,
-            hz250,
-            hz500,
-            hz1000,
-            hz2000,
-            hz4000,
-            hz8000,
-        ) = s.octave_band_levels.get_OB_sound_levels()
-        eqmt_level = s.dBA
 
         # fixing escape on error with same barrier coordinate
         if bar_x0 == bar_x1:
             bar_x0 += 0.0001
-            print("corrected bar_x0==bar_x1 error")
+            #print("corrected bar_x0==bar_x1 error")
         if bar_y0 == bar_y1:
             bar_y0 += 0.0001
-            print("corrected bar_y0==bar_y1 error")
-        ob_levels_list = [hz63, hz125, hz250, hz500, hz1000, hz2000, hz4000, hz8000]
-        ob_bands_list = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
+            #print("corrected bar_y0==bar_y1 error")
+
         # testing if line of sight is broken along horizontal plane
         eqmt_point = utils.Point(eqmt_x, eqmt_y)
         receiver_point = utils.Point(rcvr_x, rcvr_y)
@@ -211,7 +74,7 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            print("barrier fails horizontal test")
+            #print("barrier fails horizontal test")
             return 0
         try:
             m_source2receiver = (rcvr_y - eqmt_y) / (rcvr_x - eqmt_x)
@@ -246,7 +109,7 @@ class Barrier(Line):
 
         # testing if line of sight is broken vertically
         if bar_height_to_use < eqmt_z and bar_height_to_use < rcvr_z:
-            print("barrier fails easy vertical test")
+            #print("barrier fails easy vertical test")
             return 0
 
         distance_source2receiver_horizontal = utils.distance_formula(
@@ -274,7 +137,7 @@ class Barrier(Line):
         )
 
         if path_length_difference <= 0:
-            print("pld <= 0")
+            #print("pld <= 0")
             return 0
 
         # testing if line of sight is broken along VERTICAL plane
@@ -285,56 +148,100 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            print("barrier fails vertical test")
+            #print("barrier fails vertical test")
             return 0
 
-        speed_of_sound = 1128
-        fresnel_num_list = [
-            (2 * path_length_difference) / (speed_of_sound / ob) for ob in ob_bands_list
-        ]
+        if method == 'Fresnel' and s.octave_band_levels is not None:
+            (
+                hz63,
+                hz125,
+                hz250,
+                hz500,
+                hz1000,
+                hz2000,
+                hz4000,
+                hz8000,
+            ) = s.octave_band_levels.get_OB_sound_levels()
+            eqmt_level = s.dBA
+            if method:
+                ob_levels_list = [
+                    hz63,
+                    hz125,
+                    hz250,
+                    hz500,
+                    hz1000,
+                    hz2000,
+                    hz4000,
+                    hz8000,
+                ]
+                ob_bands_list = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
 
-        line_point_correction = (
-            0  # assume no line/point source correction 0 for point, -5 for line
-        )
-        barrier_finite_infinite_correction = 1.0  # assume infinite barrier see Mehta for correction under finite barrier.
-        Kb_barrier_constant = 5  # assume Kb (barrier constant) for wall = 5, berm = 8
-        barrier_attenuate_limit = 20  # wall limit = 20 berm limit = 23
+            speed_of_sound = 1128
+            fresnel_num_list = [
+                (2 * path_length_difference) / (speed_of_sound / ob)
+                for ob in ob_bands_list
+            ]
 
-        ob_barrier_attenuation_list = []
-        for N in fresnel_num_list:
-            n_d = math.sqrt(2 * math.pi * N)
-            ob_barrier_attenuation = (
-                (20 * math.log10(n_d / math.tanh(n_d)))
-                + Kb_barrier_constant
-                + line_point_correction
-            ) ** barrier_finite_infinite_correction
+            line_point_correction = (
+                0  # assume no line/point source correction 0 for point, -5 for line
+            )
+            barrier_finite_infinite_correction = 1.0  # assume infinite barrier see Mehta for correction under finite barrier.
+            Kb_barrier_constant = (
+                5  # assume Kb (barrier constant) for wall = 5, berm = 8
+            )
+            barrier_attenuate_limit = 20  # wall limit = 20 berm limit = 23
 
-            if ob_barrier_attenuation > barrier_attenuate_limit:
-                ob_barrier_attenuation = barrier_attenuate_limit
-            ob_barrier_attenuation_list.append(ob_barrier_attenuation)
+            ob_barrier_attenuation_list = []
+            for N in fresnel_num_list:
+                n_d = math.sqrt(2 * math.pi * N)
+                ob_barrier_attenuation = (
+                    (20 * math.log10(n_d / math.tanh(n_d)))
+                    + Kb_barrier_constant
+                    + line_point_correction
+                ) ** barrier_finite_infinite_correction
 
-        ob_attenuated_levels_list = [
-            x - y for x, y in zip(ob_levels_list, ob_barrier_attenuation_list)
-        ]
-        ob_a_weighting_list = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
-        ob_attenuated_aweighted_levels_list = [
-            x + y for x, y in zip(ob_attenuated_levels_list, ob_a_weighting_list)
-        ]
+                if ob_barrier_attenuation > barrier_attenuate_limit:
+                    ob_barrier_attenuation = barrier_attenuate_limit
+                ob_barrier_attenuation_list.append(ob_barrier_attenuation)
 
-        attenuated_aweighted_level = acoustics.decibel.dbsum(
-            ob_attenuated_aweighted_levels_list
-        )
+            ob_attenuated_levels_list = [
+                x - y for x, y in zip(ob_levels_list, ob_barrier_attenuation_list)
+            ]
+            ob_a_weighting_list = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
+            ob_attenuated_aweighted_levels_list = [
+                x + y for x, y in zip(ob_attenuated_levels_list, ob_a_weighting_list)
+            ]
 
-        barrier_IL = eqmt_level - attenuated_aweighted_level
+            attenuated_aweighted_level = acoustics.decibel.dbsum(
+                ob_attenuated_aweighted_levels_list
+            )
 
-        return [
-            round(barrier_IL, 1),
-            bar_height_to_use,
-            distance_source2receiver_horizontal,
-            distance_source2bar_horizontal,
-            distance_source2barrier_top,
-            distance_receiver2barrier_top,
-            distance_source2receiver_propogation,
-            path_length_difference,
-            "OB-Fresnel",
-        ]
+            barrier_IL = eqmt_level - attenuated_aweighted_level
+
+            return [
+                round(barrier_IL, 1),
+                round(bar_height_to_use, 2),
+                round(distance_source2receiver_horizontal, 2),
+                round(distance_source2bar_horizontal, 2),
+                round(distance_source2barrier_top, 2),
+                round(distance_receiver2barrier_top, 2),
+                round(distance_source2receiver_propogation, 2),
+                round(path_length_difference, 2),
+                "OB-Fresnel",
+            ]
+
+        elif method =='ARI':
+            pld = path_length_difference
+            barrier_IL = self.ARI_il(pld)
+
+            return [
+                barrier_IL,
+                round(bar_height_to_use, 2),
+                round(distance_source2receiver_horizontal, 2),
+                round(distance_source2bar_horizontal, 2),
+                round(distance_source2barrier_top, 2),
+                round(distance_receiver2barrier_top, 2),
+                round(distance_source2receiver_propogation, 2),
+                round(path_length_difference, 2),
+                "ARI",
+            ]
