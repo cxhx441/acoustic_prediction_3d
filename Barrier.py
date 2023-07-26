@@ -39,18 +39,17 @@ class Barrier(Line):
 
         return barrier_IL
 
-
     def get_insertion_loss(self, s: Source, r: Receiver, method: str) -> float:
         """TODO refactor me"""
-        if method not in ('ARI', 'Fresnel'):
-            raise ValueError('method must be ARI or Fresnel')
+        if method not in ("ARI", "Fresnel"):
+            raise ValueError("method must be ARI or Fresnel")
 
         if self.lies_on_point(s) or self.lies_on_point(r):
-            #print("source or receiver is on barrier start or end point")
+            # print("source or receiver is on barrier start or end point")
             return 0
 
         if self.get_xy_slope() == Line(s, r).get_xy_slope():
-            #print("source-receiver line and barrier have same slope")
+            # print("source-receiver line and barrier have same slope")
             return 0
 
         eqmt_x, eqmt_y, eqmt_z = s.get_coords()
@@ -61,21 +60,16 @@ class Barrier(Line):
         # fixing escape on error with same barrier coordinate
         if bar_x0 == bar_x1:
             bar_x0 += 0.0001
-            #print("corrected bar_x0==bar_x1 error")
+            # print("corrected bar_x0==bar_x1 error")
         if bar_y0 == bar_y1:
             bar_y0 += 0.0001
-            #print("corrected bar_y0==bar_y1 error")
+            # print("corrected bar_y0==bar_y1 error")
 
         # testing if line of sight is broken along horizontal plane
-        eqmt_point = utils.Point(eqmt_x, eqmt_y)
-        receiver_point = utils.Point(rcvr_x, rcvr_y)
-        bar_start_point = utils.Point(bar_x0, bar_y0)
-        bar_end_point = utils.Point(bar_x1, bar_y1)
-        if not utils.doIntersect(
-            eqmt_point, receiver_point, bar_start_point, bar_end_point
-        ):
-            #print("barrier fails horizontal test")
+        if not self.intersects(Line(s, r)):
+            # print("barrier fails horizontal test")
             return 0
+
         try:
             m_source2receiver = (rcvr_y - eqmt_y) / (rcvr_x - eqmt_x)
         except ZeroDivisionError:
@@ -109,7 +103,7 @@ class Barrier(Line):
 
         # testing if line of sight is broken vertically
         if bar_height_to_use < eqmt_z and bar_height_to_use < rcvr_z:
-            #print("barrier fails easy vertical test")
+            # print("barrier fails easy vertical test")
             return 0
 
         distance_source2receiver_horizontal = utils.distance_formula(
@@ -137,7 +131,7 @@ class Barrier(Line):
         )
 
         if path_length_difference <= 0:
-            #print("pld <= 0")
+            # print("pld <= 0")
             return 0
 
         # testing if line of sight is broken along VERTICAL plane
@@ -148,10 +142,10 @@ class Barrier(Line):
         if not utils.doIntersect(
             eqmt_point, receiver_point, bar_start_point, bar_end_point
         ):
-            #print("barrier fails vertical test")
+            # print("barrier fails vertical test")
             return 0
 
-        if method == 'Fresnel' and s.octave_band_levels is not None:
+        if method == "Fresnel" and s.octave_band_levels is not None:
             (
                 hz63,
                 hz125,
@@ -230,7 +224,7 @@ class Barrier(Line):
                 "OB-Fresnel",
             ]
 
-        elif method =='ARI':
+        elif method == "ARI":
             pld = path_length_difference
             barrier_IL = self.ARI_il(pld)
 

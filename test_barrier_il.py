@@ -24,7 +24,7 @@ class TestBarrier(unittest.TestCase):
             "b_fres",
         )
 
-        for i in range(10000):
+        for i in range(50000):
             headers = (
                 # "ob",
                 # "dba",
