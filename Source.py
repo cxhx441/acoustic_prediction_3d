@@ -1,5 +1,6 @@
 from Geometry import Coordinate
 import math
+from random import randint
 
 
 class OctaveBands:
@@ -12,6 +13,24 @@ class OctaveBands:
         self.hz2000 = hz2000
         self.hz4000 = hz4000
         self.hz8000 = hz8000
+
+    @staticmethod
+    def get_rand_ob() -> tuple[float]:
+        """random octave bands for testing"""
+
+        def rand_db():
+            return randint(0, 100)
+
+        return OctaveBands(
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+            rand_db(),
+        )
 
     def get_OB_sound_levels(self) -> tuple[float]:
         return (
