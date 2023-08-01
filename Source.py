@@ -15,11 +15,32 @@ class OctaveBands:
         self.hz8000 = hz8000
 
     @staticmethod
-    def get_rand_ob() -> tuple[float]:
-        """random octave bands for testing"""
+    def get_static_ob(ob_db=100) -> tuple[float]:
+        """
+        random octave bands for testing
+        lower and upper are the bounds for the random ob values. default is 0 to 100
+        """
+
+        return OctaveBands(
+            ob_db,
+            ob_db,
+            ob_db,
+            ob_db,
+            ob_db,
+            ob_db,
+            ob_db,
+            ob_db,
+        )
+
+    @staticmethod
+    def get_rand_ob(lower=0, upper=100) -> tuple[float]:
+        """
+        random octave bands for testing
+        lower and upper are the bounds for the random ob values. default is 0 to 100
+        """
 
         def rand_db():
-            return randint(0, 100)
+            return randint(lower, upper)
 
         return OctaveBands(
             rand_db(),
