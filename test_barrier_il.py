@@ -26,20 +26,7 @@ class TestBarrier(unittest.TestCase):
 
         for i in range(10000):
 
-            def rand_db():
-                return randint(0, 100)
-
-            # rand_coord = random.randint(0, 100)
-            ob = OctaveBands(
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-            )
+            ob = OctaveBands.get_rand_ob(0, 100)
             dba = ob.get_dBA()
 
             # path hits barrier
@@ -153,20 +140,7 @@ class TestBarrier(unittest.TestCase):
         )
 
         for i in range(10000):
-
-            def rand_db():
-                return randint(0, 100)
-
-            ob = OctaveBands(
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-            )
+            ob = OctaveBands.get_rand_ob(0, 100)
             dba = ob.get_dBA()
 
             def rand_coord(low, high):
@@ -255,19 +229,7 @@ class TestBarrier(unittest.TestCase):
             )
 
     def test_rotation_manual(self):
-        def rand_db():
-            return randint(0, 100)
-
-        ob = OctaveBands(
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-            rand_db(),
-        )
+        ob = OctaveBands.get_rand_ob(0, 100)
         dba = ob.get_dBA()
 
         b = Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
@@ -297,21 +259,7 @@ class TestBarrier(unittest.TestCase):
 
 
     def test_manual(self):
-        def rand_db():
-            return randint(0, 100)
-
-        def rand_octavebands():
-            return OctaveBands(
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-                rand_db(),
-            )
-        ob = OctaveBands(100, 100, 100, 100, 100, 100, 100, 100)
+        ob = OctaveBands.get_static_ob(100)
         dba = ob.get_dBA()
 
         b = Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
