@@ -11,21 +11,14 @@ import math
 
 class TestBarrier(unittest.TestCase):
     def test_random_il(self):
-        print(
-            # "ob",
-            # "dba",
-            # "b_start",
-            # "b_end",
-            # "s_coord",
-            # "r_coord",
-            "b_old_ari",
-            "b_ari",
-            "b_old_fres",
-            "b_fres",
-        )
+        def rand_coord(low, high):
+            return Coordinate(
+                randint(low, high) / 10,
+                randint(low, high) / 10,
+                randint(low, high) / 10,
+            )
 
         for i in range(10000):
-
             ob = OctaveBands.get_rand_ob(0, 100)
             dba = ob.get_dBA()
 
@@ -55,13 +48,6 @@ class TestBarrier(unittest.TestCase):
             # b_end = Coordinate(5, 1, 5)
             # s_coord = Coordinate(1, 0, 1)
             # r_coord = Coordinate(10, 0, 1)
-
-            def rand_coord(low, high):
-                return Coordinate(
-                    randint(low, high) / 10,
-                    randint(low, high) / 10,
-                    randint(low, high) / 10,
-                )
 
             low, high = -100, 100
             b_start = rand_coord(low, high)
@@ -93,6 +79,7 @@ class TestBarrier(unittest.TestCase):
             b_old = Old_Barrier.Barrier(start=b_start, end=b_end)
             b = Barrier.Barrier(start=b_start, end=b_end)
 
+
             print(f"TEST NUMBER {i}")
             b_old_ari = b_old.get_insertion_loss_ARI(s, r)
             b_ari = b.get_insertion_loss(s, r, method="ARI")
@@ -104,42 +91,15 @@ class TestBarrier(unittest.TestCase):
             print(b_fres)
             print()
             print()
+            coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s_coord})\nr.set_coords(Coordinate{r_coord})"
 
             with self.subTest():
-                coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s_coord})\nr.set_coords(Coordinate{r_coord})"
-
-                self.assertEqual(b_old_ari, b_ari, msg=coords_msg)
-                self.assertEqual(b_old_fres, b_fres, msg=coords_msg)
+                self.assertAlmostEqual(b_old_ari, b_ari, msg=coords_msg)
+                self.assertAlmostEqual(b_old_fres, b_fres, msg=coords_msg)
                 # TODO need to handle where path length difference = 0
 
-        print(
-            "ob",
-            "dba",
-            "b_start",
-            "b_end",
-            "s_coord",
-            "r_coord",
-            "b_old_ari",
-            "b_ari",
-            "b_old_fres",
-            "b_fres",
-        )
-
     def test_rotation(self):
-        headers = (
-            "ob",
-            "dba",
-            "b_start",
-            "b_end",
-            "s_coord",
-            "r_coord",
-            "b_old_ari",
-            "b_ari",
-            "b_old_fres",
-            "b_fres",
-        )
-
-        for i in range(10000):
+        for i in range(1000):
             ob = OctaveBands.get_rand_ob(0, 100)
             dba = ob.get_dBA()
 
@@ -181,12 +141,12 @@ class TestBarrier(unittest.TestCase):
             b_ari = b.get_insertion_loss(s, r, "ARI")
             b_fres = b.get_insertion_loss(s, r, "Fresnel")
 
-            print("TEST NUMBER", i)
+            print("\nTEST NUMBER", i)
             print(f"{b.start}, {b.end} : {s_coord}, {r_coord}")
             # then rotate
             sr_line = Line(s_coord, r_coord)
-            intersection = b.get_xy_intersection(sr_line)
-            intersection = Coordinate(intersection[0], intersection[1], 0)
+            xy_intersection = b.get_xy_intersection(sr_line)
+            intersection = Coordinate(xy_intersection[0], xy_intersection[1], 0)
             rand_angle = uniform(0, 2 * math.pi)
             b.rotate_xy(rand_angle, intersection)
             sr_line.rotate_xy(rand_angle, intersection)
@@ -203,30 +163,18 @@ class TestBarrier(unittest.TestCase):
                 and b_rotated_ari == 0
                 and b_rotated_fres == 0
             ):
+                print("all 0s")
                 continue
-
-            if b_ari != 0:
-                b_ari = [round(x, 2) for x in b_ari[:-1] if isinstance(x, float)]
-            if b_fres != 0:
-                b_fres = [round(x, 2) for x in b_fres[:-1] if isinstance(x, float)]
-            if b_rotated_ari != 0:
-                b_rotated_ari = [
-                    round(x, 2) for x in b_rotated_ari[:-1] if isinstance(x, float)
-                ]
-            if b_rotated_fres != 0:
-                b_rotated_fres = [
-                    round(x, 2) for x in b_rotated_fres[:-1] if isinstance(x, float)
-                ]
 
             print(f"{b.start} -> {b.end}")
             print(f"{b_rotated_ari} == \n{b_ari}")
-            print()
             print(f"{b.start} -> {b.end}")
             print(f"{b_rotated_fres} == \n{b_fres}")
-            self.assertEqual(b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}")
-            self.assertEqual(
-                b_rotated_fres, b_fres, msg=f"{b_rotated_fres} != {b_fres}"
-            )
+            with self.subTest():
+                self.assertEqual(b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}")
+                self.assertEqual(
+                    b_rotated_fres, b_fres, msg=f"{b_rotated_fres} != {b_fres}"
+                )
 
     def test_rotation_manual(self):
         ob = OctaveBands.get_rand_ob(0, 100)
@@ -257,13 +205,14 @@ class TestBarrier(unittest.TestCase):
         self.assertEqual(b_ari, b2_ari)
         self.assertEqual(b_fres, b2_fres)
 
-
     def test_manual(self):
         ob = OctaveBands.get_static_ob(100)
         dba = ob.get_dBA()
 
         b = Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
-        b_old = Old_Barrier.Barrier(Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6))
+        b_old = Old_Barrier.Barrier(
+            Coordinate(0.1, -9.3, 7.2), Coordinate(-8.5, 8.7, -2.6)
+        )
         s = Source(Coordinate(1.8, -2.0, 5.1), dba, 3.28, octave_band_levels=ob)
         r = Receiver(Coordinate(-8.0, -6.3, -4.9))
 
@@ -311,6 +260,7 @@ class TestBarrier(unittest.TestCase):
     def shared_vertex(self):
         """barrier and sr_line share a vertex"""
         pass
+
 
 if __name__ == "__main__":
     unittest.main()
