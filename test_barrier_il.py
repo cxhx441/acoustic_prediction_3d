@@ -10,7 +10,7 @@ import math
 
 
 class TestBarrier(unittest.TestCase):
-    def test_il(self):
+    def test_random_il(self):
         print(
             # "ob",
             # "dba",
