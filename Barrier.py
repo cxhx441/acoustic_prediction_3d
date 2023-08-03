@@ -1,10 +1,7 @@
 from Source import Source  # for type hinting
 from Receiver import Receiver  # for type hinting
-import utils  # refactor to not need this.
-from sympy import Line, Point, Segment, Ray
-import math
+from sympy import Segment
 from acoustics.decibel import dbsum
-import operator
 import insertion_loss_methods as il_methods
 
 DEBUG = True
@@ -28,7 +25,3 @@ class Barrier(Segment):
                 super().__init__(args[0], args[1])
             except AttributeError:
                 raise TypeError("args must be 2 Point objects or 1 Line object")
-
-
-
-

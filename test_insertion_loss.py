@@ -3,6 +3,7 @@ from InsertionLoss import InsertionLoss
 from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
+from OctaveBands import OctaveBands
 
 
 class TestInsertionLoss(unittest.TestCase):

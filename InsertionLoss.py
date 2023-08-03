@@ -1,4 +1,4 @@
-from scipy import Point, Line, Segment, Ray
+from sympy import Point, Line, Segment, Ray
 from Source import Source  # TODO just for type hint
 from Receiver import Receiver  # TODO just for type hint
 from Barrier import Barrier  # TODO just for type hint

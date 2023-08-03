@@ -1,4 +1,4 @@
-from scipy import Point
+from sympy import Point
 import math
 from random import randint
 from OctaveBands import OctaveBands

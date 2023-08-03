@@ -1,4 +1,4 @@
-from scipy import Point
+from sympy import Point
 
 
 class Receiver(Point):
