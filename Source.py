@@ -4,6 +4,10 @@ from random import randint
 from OctaveBands import OctaveBands
 
 class Source(Point):
+    """ A source of sound.
+        Attributes:
+            dBA: The dBA level of the source. If octave_band_levels are given, this is overridden.
+    """
     def __init__(
         self,
         point: Point,
@@ -12,9 +16,12 @@ class Source(Point):
         octave_band_levels: OctaveBands = None,
     ):
         super().__init__(point.x, point.y, point.z)
-        self.dBA = dBA  # the dBA level of this source
         self.reference_distance = ref_dist
         self.octave_band_levels = octave_band_levels
+        if octave_band_levels is None:
+            self.dBA = dBA
+        else:
+            self.dBA = self.octave_band_levels.get_dBA()
 
     def set_dBA(self, dBA) -> None:
         self.octave_band_levels = None

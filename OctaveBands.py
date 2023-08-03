@@ -1,4 +1,5 @@
-
+from random import randint
+from math import log10
 class OctaveBands:
     def __init__(self, hz63, hz125, hz250, hz500, hz1000, hz2000, hz4000, hz8000):
         self.hz63 = hz63
@@ -70,7 +71,7 @@ class OctaveBands:
         dBA = 0
         for lvl in self.get_OB_A_weigthed_sound_levels():
             dBA += 10 ** (lvl / 10)
-        return 10 * math.log10(dBA)
+        return 10 * log10(dBA)
 
     def __str__(self):
         return str(self.get_OB_sound_levels())
