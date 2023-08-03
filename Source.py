@@ -1,4 +1,4 @@
-from Geometry import Coordinate
+from scipy import Point
 import math
 from random import randint
 
@@ -80,15 +80,15 @@ class OctaveBands:
         return str(self.get_OB_sound_levels())
 
 
-class Source(Coordinate):
+class Source(Point):
     def __init__(
         self,
-        coords: Coordinate,
+        point: Point,
         dBA: float,
         ref_dist: float,
         octave_band_levels: OctaveBands = None,
     ):
-        super().__init__(coords.x, coords.y, coords.z)
+        super().__init__(point.x, point.y, point.z)
         self.dBA = dBA  # the dBA level of this source
         self.reference_distance = ref_dist
         self.octave_band_levels = octave_band_levels

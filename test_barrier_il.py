@@ -4,99 +4,136 @@ import Old_Barrier
 from Source import Source, OctaveBands
 from Receiver import Receiver
 from random import randint, uniform
-from Geometry import Coordinate, Line
+from old_Geometry import Coordinate, Line
 from tabulate import tabulate
 import math
 
 
+def rand_coord(low, high):
+    return Coordinate(
+        randint(low, high) / 10,
+        randint(low, high) / 10,
+        randint(low, high) / 10,
+    )
+
+
+def get_rand_source_receiver_bar_bar_old(low_coord, high_coord):
+    ob = OctaveBands.get_rand_ob(0, 100)
+    dba = ob.get_dBA()
+
+    s_coord = rand_coord(low_coord, high_coord)
+    r_coord = rand_coord(low_coord, high_coord)
+    b_start = rand_coord(low_coord, high_coord)
+    b_end = rand_coord(low_coord, high_coord)
+
+    s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+    r = Receiver(point=r_coord)
+    b_old = Old_Barrier.Barrier(start=b_start, end=b_end)
+    b = Barrier.Barrier(start=b_start, end=b_end)
+
+    return s, r, b_old, b
+
+
+def get_oldari_ari_oldfres_fres(s, r, b_old, b):
+    b_old_ari = b_old.get_insertion_loss_ARI(s, r)
+    b_ari = b.get_insertion_loss(s, r, method="ARI")
+    b_old_fres = b_old.get_insertion_loss_OB_fresnel(s, r)
+    b_fres = b.get_insertion_loss(s, r, method="Fresnel")
+
+    return b_old_ari, b_ari, b_old_fres, b_fres
+
+
+def get_source_receiver_bar_bar_old(s_coord, r_coord, b_start, b_end):
+    ob = OctaveBands.get_rand_ob(0, 100)
+    dba = ob.get_dBA()
+
+    s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+    r = Receiver(point=r_coord)
+    b_old = Old_Barrier.Barrier(start=b_start, end=b_end)
+    b = Barrier.Barrier(start=b_start, end=b_end)
+
+    return s, r, b_old, b
+
+
 class TestBarrier(unittest.TestCase):
     def test_random_il(self):
-        def rand_coord(low, high):
-            return Coordinate(
-                randint(low, high) / 10,
-                randint(low, high) / 10,
-                randint(low, high) / 10,
-            )
-
-        for i in range(10000):
-            ob = OctaveBands.get_rand_ob(0, 100)
-            dba = ob.get_dBA()
-
-            # path hits barrier
-            # not vertical or horizontal
-            # barrier line is vertical
-            # barrier line is horizontal
-            # s_2_r line is horizontal
-            # s_2_r line is vertical
-            # path misses barrier
-            # horizontally
-            # not vertical or horizontal
-            # barrier line is vertical
-            # barrier line is horizontal
-            # s_2_r line is horizontal
-            # s_2_r line is vertical
-            # vertically
-            # not vertical or horizontal
-            # barrier line is vertical
-            # barrier line is horizontal
-            # s_2_r line is horizontal
-            # s_2_r line is vertical
-
-            # dba = ob.get_dBA()
-            # b_start = Coordinate(5, -1, 5)
-            # # b_start = Coordinate(0, 0, 0) # causes error
-            # b_end = Coordinate(5, 1, 5)
-            # s_coord = Coordinate(1, 0, 1)
-            # r_coord = Coordinate(10, 0, 1)
-
+        for i in range(3000):
             low, high = -100, 100
-            b_start = rand_coord(low, high)
-            # b_start = Coordinate(0, 0, 0) # causes error
-            b_end = rand_coord(low, high)
-            s_coord = rand_coord(low, high)
-            r_coord = rand_coord(low, high)
-
-            # # same slope
-            # b_start = Coordinate(-4, 4, -2)
-            # b_end = Coordinate(-3, 3, -9)
-            # s_coord = Coordinate(8, -8, 10)
-            # r_coord = Coordinate(-5, 5, 0)
-
-            # # infinite slope
-            # b_start = Coordinate(-4, 4, -2)
-            # b_end = Coordinate(-3, 3, -9)
-            # s_coord = Coordinate(6, 9, 3)
-            # r_coord = Coordinate(6, 2, 4)
-
-            # # good case
-            # b_start = Coordinate(0, 10, 100)
-            # b_end = Coordinate(0, -10, 100)
-            # s_coord = Coordinate(-10, 0, 9)
-            # r_coord = Coordinate(10, 0, 9)
-
-            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-            r = Receiver(coords=r_coord)
-            b_old = Old_Barrier.Barrier(start=b_start, end=b_end)
-            b = Barrier.Barrier(start=b_start, end=b_end)
-
+            s, r, b_old, b = get_rand_source_receiver_bar_bar_old(low, high)
 
             print(f"TEST NUMBER {i}")
-            b_old_ari = b_old.get_insertion_loss_ARI(s, r)
-            b_ari = b.get_insertion_loss(s, r, method="ARI")
-            b_old_fres = b_old.get_insertion_loss_OB_fresnel(s, r)
-            b_fres = b.get_insertion_loss(s, r, method="Fresnel")
+            b_old_ari, b_ari, b_old_fres, b_fres = get_oldari_ari_oldfres_fres(
+                s, r, b_old, b
+            )
             print(b_old_ari)
             print(b_ari)
             print(b_old_fres)
             print(b_fres)
             print()
             print()
-            coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s_coord})\nr.set_coords(Coordinate{r_coord})"
+            coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s.get_coords})\nr.set_coords(Coordinate{r.get_coords})"
 
             with self.subTest():
                 self.assertAlmostEqual(b_old_ari, b_ari, msg=coords_msg)
                 self.assertAlmostEqual(b_old_fres, b_fres, msg=coords_msg)
                 # TODO need to handle where path length difference = 0
+
+    def test_same_slope(self):
+        # same slope
+        s_coord = Coordinate(8, -8, 10)
+        r_coord = Coordinate(-5, 5, 0)
+        b_start = Coordinate(-4, 4, -2)
+        b_end = Coordinate(-3, 3, -9)
+
+        s, r, b_old, b = get_source_receiver_bar_bar_old(
+            s_coord, r_coord, b_start, b_end
+        )
+        b_old_ari, b_ari, b_old_fres, b_fres = get_oldari_ari_oldfres_fres(
+            s, r, b_old, b
+        )
+
+        coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s.get_coords})\nr.set_coords(Coordinate{r.get_coords})"
+
+        self.assertAlmostEqual(b_old_ari, b_ari, msg=coords_msg)
+        self.assertAlmostEqual(b_old_fres, b_fres, msg=coords_msg)
+
+    def test_infinite_slope(self):
+        # infinite slope
+        b_start = Coordinate(-4, 4, -2)
+        b_end = Coordinate(-3, 3, -9)
+        s_coord = Coordinate(6, 9, 3)
+        r_coord = Coordinate(6, 2, 4)
+
+        s, r, b_old, b = get_source_receiver_bar_bar_old(
+            s_coord, r_coord, b_start, b_end
+        )
+        b_old_ari, b_ari, b_old_fres, b_fres = get_oldari_ari_oldfres_fres(
+            s, r, b_old, b
+        )
+
+        coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s.get_coords})\nr.set_coords(Coordinate{r.get_coords})"
+
+        self.assertAlmostEqual(b_old_ari, b_ari, msg=coords_msg)
+        self.assertAlmostEqual(b_old_fres, b_fres, msg=coords_msg)
+
+    def test_good_case(self):
+        # good case
+        b_start = Coordinate(0, 10, 100)
+        b_end = Coordinate(0, -10, 100)
+        s_coord = Coordinate(-10, 0, 9)
+        r_coord = Coordinate(10, 0, 9)
+
+        s, r, b_old, b = get_source_receiver_bar_bar_old(
+            s_coord, r_coord, b_start, b_end
+        )
+        b_old_ari, b_ari, b_old_fres, b_fres = get_oldari_ari_oldfres_fres(
+            s, r, b_old, b
+        )
+
+        coords_msg = f"\nb_old.set_start(Coordinate{b_old.start})\nb_old.set_end(Coordinate{b_old.end})\nb.set_start(Coordinate{b.start})\nb.set_end(Coordinate{b.end})\ns.set_coords(Coordinate{s.get_coords})\nr.set_coords(Coordinate{r.get_coords})"
+
+        self.assertAlmostEqual(b_old_ari, b_ari, msg=coords_msg)
+        self.assertAlmostEqual(b_old_fres, b_fres, msg=coords_msg)
 
     def test_rotation(self):
         for i in range(1000):
@@ -134,8 +171,8 @@ class TestBarrier(unittest.TestCase):
             # s_coord = Coordinate(-10, 0.001, 9)
             # r_coord = Coordinate(10, 0, 9)
 
-            s = Source(coords=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
-            r = Receiver(coords=r_coord)
+            s = Source(point=s_coord, dBA=dba, ref_dist=3.28, octave_band_levels=ob)
+            r = Receiver(point=r_coord)
             b = Barrier.Barrier(start=b_start, end=b_end)
 
             b_ari = b.get_insertion_loss(s, r, "ARI")
@@ -171,7 +208,9 @@ class TestBarrier(unittest.TestCase):
             print(f"{b.start} -> {b.end}")
             print(f"{b_rotated_fres} == \n{b_fres}")
             with self.subTest():
-                self.assertEqual(b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}")
+                self.assertEqual(
+                    b_rotated_ari, b_ari, msg=f"{b_rotated_ari} != {b_ari}"
+                )
                 self.assertEqual(
                     b_rotated_fres, b_fres, msg=f"{b_rotated_fres} != {b_fres}"
                 )
