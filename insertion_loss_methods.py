@@ -1,3 +1,8 @@
+import math
+from Source import Source  # for type hinting
+import operator
+from acoustics.decibel import dbsum
+
 def ARI_interpolation(pld, lowerIL, upperIL, lowerPLD, upperPLD):
     diff_in_reduction = (pld - lowerPLD) / (upperPLD - lowerPLD)
     change_IL = upperIL - lowerIL
@@ -5,8 +10,7 @@ def ARI_interpolation(pld, lowerIL, upperIL, lowerPLD, upperPLD):
     return int(round(barrier_IL, 0))
 
 
-def get_ARI_il(path_length_difference):
-    pld = path_length_difference
+def get_ARI_il(pld: float):
 
     # TODO Flip this to start at if pld > 12, elif pld > 6, etc. Although, this is not a big deal and this is clearer.
     if 0 < pld and pld <= 0.5:
@@ -38,7 +42,7 @@ def get_fresnel_numbers(pld, c):
     return [(2 * pld) / (c / ob) for ob in ob_frequencies]
 
 
-def get_fresnel_il(source: Source) -> float:
+def get_fresnel_il(s: Source, pld: float) -> float:
     a_weights = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
     eqmt_lvl = s.dBA
     ob_levels = list(s.octave_band_levels.get_OB_sound_levels())
