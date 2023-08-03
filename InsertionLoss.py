@@ -4,13 +4,41 @@ from Receiver import Receiver  # TODO just for type hint
 from Barrier import Barrier  # TODO just for type hint
 import insertion_loss_methods as il_methods
 
-class HorizontalSection():
-    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
-        pass
 
-class VerticalSection():
-    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver, bar_cross_point_3D: Point):
-        pass
+class HorizontalSection:
+    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
+        self.s = Point(source.x, source.y, 0)
+        self.r = Point(receiver.x, receiver.y, 0)
+        self.s_r = Segment(self.s, self.r)
+        self.bar_p1 = Point(barrier.p1.x, barrier.p1.y, 0)
+        self.bar_p2 = Point(barrier.p2.x, barrier.p2.y, 0)
+        self.bar = Segment(self.bar_p1, self.bar_p2)
+        try:
+            self.intersect = self.s_r.intersection(self.bar)[0]
+        except IndexError:
+            self.intersect = None
+
+
+class VerticalSection:
+    def __init__(
+        self,
+        barrier: Barrier,
+        source: Source,
+        receiver: Receiver,
+        bar_cross_point_3D: Point,
+        h_sect: HorizontalSection,
+    ):
+        self.s = Point(0, source.z, 0)
+        self.r = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
+        self.s_r = Segment(self.s, self.r)
+        self.bar_cross_point = Point( self.h_sect.s.distance(h_sect.intersect), bar_cross_point_3D.z, 0,)
+        self.bar = Ray(self.bar_cross_point, self.bar_cross_point + Point(0, -1, 0))
+
+        try:
+            self.intersect = self.s_r.intersection(self.bar)[0]
+        except IndexError:
+            self.intersect = None
+
 
 class InsertionLoss:
     def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
@@ -19,55 +47,13 @@ class InsertionLoss:
         self.r = receiver
 
         self.s_r = Segment(self.s, self.r)
-        #self.update_horizontal_section_attr()
+        # self.update_horizontal_section_attr()
         self.horizontal_section = HorizontalSection(self.b, self.s, self.r)
         self.bar_cross_point_3D = self.get_barrier_cross_point_3D_attr()
-        #self.update_vertical_section_attr()
+        # self.update_vertical_section_attr()
         self.vertical_section = VerticalSection(self.b, self.s, self.r)
         self.update_pld()
         self.update_insertion_loses()
-
-    # for 2D horizontal plane calculations
-    def update_horizontal_section_attr(self):
-        """used in initialization and update methods"""
-        self.horiz_2D_s = (Point(self.s.x, self.s.y, 0),)
-        self.horiz_2D_r = (Point(self.r.x, self.r.y, 0),)
-        self.horiz_2D_s_r_segment = Segment(self.horiz_2D_s, self.horiz_2D_r)
-        self.horiz_2D_bar_p1 = (Point(self.b.p1.x, self.b.p1.y, 0),)
-        self.horiz_2D_bar_p2 = (Point(self.b.p2.x, self.b.p2.y, 0),)
-        self.horiz_2D_bar_segment = Segment(self.horiz_2D_bar_p1, self.horiz_2D_bar_p2)
-        try:
-            self.horiz_2D_intersect = self.horiz_2D_s_r_segment.intersection(
-                self.horiz_2D_bar_segment
-            )[0]
-        except IndexError:
-            self.horiz_2D_intersect = None
-
-    # TODO this is actuall wrong as it doesn't take into account the actuall distances between the elements
-    # TODO do we need this with the other vertical check?
-    # for 2D vertical plane calculations
-    def update_vertical_section_attr(self):
-        """
-        used in initialization and update methods
-        """
-
-        self.vert_2D_s = Point(0, self.s.z, 0)
-        self.vert_2D_r = Point(self.horiz_2D_s.distance(self.horiz_2D_r), self.r.z, 0)
-        self.vert_2D_s_r_segment = Segment(self.vert_2D_s, self.vert_2D_r)
-        self.vert_2D_bar_cross_point = Point(
-            self.horiz_2D_s.distance(self.horiz_2D_intersect),
-            self.bar_cross_point_3D.z,
-            0,
-        )
-        self.vert_2D_bar_ray = Ray(
-            self.vert_2D_bar_cross_point, self.vert_2D_bar_cross_point + Point(0, -1, 0)
-        )
-        try:
-            self.vert_2D_intersect = self.vert_2D_s_r_segment.intersection(
-                self.vert_2D_bar_ray
-            )[0]
-        except IndexError:
-            self.vert_2D_intersect = None
 
     def get_attr_for_graph(self):
         dist_source2receiver_horizontal = self.horiz_2D_s.distance(self.horiz_2D_r)
