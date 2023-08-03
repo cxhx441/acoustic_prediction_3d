@@ -4,6 +4,13 @@ from Receiver import Receiver  # TODO just for type hint
 from Barrier import Barrier  # TODO just for type hint
 import insertion_loss_methods as il_methods
 
+class HorizontalSection():
+    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
+        pass
+
+class VerticalSection():
+    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver, bar_cross_point_3D: Point):
+        pass
 
 class InsertionLoss:
     def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
@@ -12,9 +19,11 @@ class InsertionLoss:
         self.r = receiver
 
         self.s_r = Segment(self.s, self.r)
-        self.update_horizontal_section_attr()
-        self.update_barrier_cross_point_3D_attr()
-        self.update_vertical_section_attr()
+        #self.update_horizontal_section_attr()
+        self.horizontal_section = HorizontalSection(self.b, self.s, self.r)
+        self.bar_cross_point_3D = self.get_barrier_cross_point_3D_attr()
+        #self.update_vertical_section_attr()
+        self.vertical_section = VerticalSection(self.b, self.s, self.r)
         self.update_pld()
         self.update_insertion_loses()
 
@@ -47,7 +56,7 @@ class InsertionLoss:
         self.vert_2D_s_r_segment = Segment(self.vert_2D_s, self.vert_2D_r)
         self.vert_2D_bar_cross_point = Point(
             self.horiz_2D_s.distance(self.horiz_2D_intersect),
-            self.bar_cross_point3D.z,
+            self.bar_cross_point_3D.z,
             0,
         )
         self.vert_2D_bar_ray = Ray(
@@ -64,8 +73,8 @@ class InsertionLoss:
         dist_source2receiver_horizontal = self.horiz_2D_s.distance(self.horiz_2D_r)
         dist_source2bar_horizontal = self.horiz_2D_s.distance(self.horiz_2D_intersect)
         dist_source2receiver_propogation = self.s_r.length
-        dist_source2barrier_top = self.s.distance(self.bar_cross_point3D)
-        dist_receiver2barrier_top = self.r.distance(self.bar_cross_point3D)
+        dist_source2barrier_top = self.s.distance(self.bar_cross_point_3D)
+        dist_receiver2barrier_top = self.r.distance(self.bar_cross_point_3D)
         pld = (
             dist_source2barrier_top
             + dist_receiver2barrier_top
@@ -87,8 +96,8 @@ class InsertionLoss:
         dist_source2receiver_horizontal = self.horiz_2D_s.distance(self.horiz_2D_r)
         dist_source2bar_horizontal = self.horiz_2D_s.distance(self.horiz_2D_intersect)
         dist_source2receiver_propogation = self.s_r.length
-        dist_source2barrier_top = self.s.distance(self.bar_cross_point3D)
-        dist_receiver2barrier_top = self.r.distance(self.bar_cross_point3D)
+        dist_source2barrier_top = self.s.distance(self.bar_cross_point_3D)
+        dist_receiver2barrier_top = self.r.distance(self.bar_cross_point_3D)
         pld_1 = (
             dist_source2barrier_top
             + dist_receiver2barrier_top
@@ -97,8 +106,8 @@ class InsertionLoss:
         # end legacy section
 
         pld_2 = (
-            self.s.distance(self.bar_cross_point3D)
-            + self.r.distance(self.bar_cross_point3D)
+            self.s.distance(self.bar_cross_point_3D)
+            + self.r.distance(self.bar_cross_point_3D)
             - self.s.dicstance(self.r)
         )
 
@@ -128,7 +137,7 @@ class InsertionLoss:
             or l2.contains(l1.p2)
         )
 
-    def update_barrier_cross_point_3D_attr(self):
+    def get_barrier_cross_point_3D_attr(self):
         vert_3Dline_at_intersect = Line(
             self.horiz_2D_intersect, self.horiz_2D_intersect + Point(0, 0, 1)
         )
@@ -139,7 +148,7 @@ class InsertionLoss:
         if s_r_cross_3Dpoint.z < bar_cross_3Dpoint.z:
             raise Exception("barrier fails EASY vertical test")
 
-        self.bar_cross_point3D = Point(
+        return Point(
             self.horiz_2D_intersect.x, self.horiz_2D_intersect.y, bar_cross_3Dpoint.z
         )
 
