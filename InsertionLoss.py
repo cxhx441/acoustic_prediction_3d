@@ -1,12 +1,12 @@
 from scipy import Point, Line, Segment, Ray
 from Source import Source  # TODO just for type hint
 from Receiver import Receiver  # TODO just for type hint
-from Barrier import Barrier  # TODO can I remove this
+from Barrier import Barrier  # TODO just for type hint
 import insertion_loss_methods as il_methods
 
 
 class InsertionLoss:
-    def __init__(self, barrier, source, receiver):
+    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
         self.b = barrier
         self.s = source
         self.r = receiver
@@ -146,9 +146,9 @@ class InsertionLoss:
     def update_insertion_losses(self) -> float:
         """TODO refactor me"""
 
-        if self.segment_is_grazing_other(self):
-            log("start or end point is on other line entity")
-            return 0
+        # if self.segment_is_grazing_other(self):
+        #     log("start or end point is on other line entity")
+        #     return 0
 
         # if bar_segment_2D.is_parallel(s_r_segment_2D):
         #     raise Exception("barrier is parallel to source-receiver line")
@@ -156,7 +156,8 @@ class InsertionLoss:
 
         # testing if line of sight is broken along horizontal/vertical planeh
         if (
-            self.horiz_2D_intersect is None
+            self.segment_is_grazing_other()
+            or self.horiz_2D_intersect is None
             or self.vert_2D_intersect is None
             or self.bar_cross_point_3D is None
             or self.pld == 0
