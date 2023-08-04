@@ -15,7 +15,7 @@ def log(*args):
 
 
 class HorizontalSection:
-    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
+    def __init__(self, source: Point, receiver: Point, barrier: Segment):
         self.s = Point(source.x, source.y, 0)
         self.r = Point(receiver.x, receiver.y, 0)
         self.s_r = Segment(self.s, self.r)
@@ -32,8 +32,8 @@ class HorizontalSection:
 class VerticalSection:
     def __init__(
         self,
-        source: Source,
-        receiver: Receiver,
+        source: Point,
+        receiver: Point,
         bar_cross_point_3D: Point,
         h_sect: HorizontalSection,
     ):
@@ -41,7 +41,7 @@ class VerticalSection:
         self.r = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
         self.s_r = Segment(self.s, self.r)
         self.bar_cross_point = Point(
-            self.h_sect.s.distance(h_sect.intersect),
+            h_sect.s.distance(h_sect.intersect),
             bar_cross_point_3D.z,
             0,
         )
@@ -55,11 +55,11 @@ class VerticalSection:
 
 
 class InsertionLoss:
-    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
-        self.b = barrier
+    def __init__(self, source: Source, receiver: Receiver, barrier: Barrier):
         self.s = source
         self.r = receiver
-        self.s_r = Segment(self.s, self.r)
+        self.b = barrier
+        self.s_r = Segment(self.s.geo, self.r.geo)
 
         # init to 0, None
         self.h_section = None
@@ -70,16 +70,23 @@ class InsertionLoss:
         self.il_fresnel = 0
 
         # update if we can
-        self.h_section = HorizontalSection(self.b, self.s, self.r)
+        self.h_section = HorizontalSection(self.s.geo, self.r.geo, self.b.geo)
         if self.h_section.intersect is None:
+            log("h_section.intersect is None")
+            return
+
+        if self.bar_s_r_grazing():
+            log("Grazing is True")
             return
 
         self.bar_cross_point_3D = self.get_barrier_cross_point_3D_attr()
         if self.bar_cross_point_3D is None:
+            log("bar_cross_point_3D is None")
             return
 
-        self.v_section = VerticalSection(self.b, self.s, self.r)
+        self.v_section = VerticalSection(self.s.geo, self.r.geo, self.bar_cross_point_3D, self.h_section)
         if self.v_section.intersect is None:
+            log("v_section.intersect is None")
             return
 
         self.pld = self.get_pld()
@@ -110,15 +117,15 @@ class InsertionLoss:
 
     def get_pld(self):
         # this section is legacy... hope to delete
-        dist_source2receiver_horizontal = self.horizontal_section.s.distance(
-            self.horizontal_section.r
+        dist_source2receiver_horizontal = self.h_section.s.distance(
+            self.h_section.r
         )
-        dist_source2bar_horizontal = self.horizontal_section.s.distance(
-            self.horizontal_section.intersect
+        dist_source2bar_horizontal = self.h_section.s.distance(
+            self.h_section.intersect
         )
         dist_source2receiver_propogation = self.s_r.length
-        dist_source2barrier_top = self.s.distance(self.bar_cross_point_3D)
-        dist_receiver2barrier_top = self.r.distance(self.bar_cross_point_3D)
+        dist_source2barrier_top = self.s.geo.distance(self.bar_cross_point_3D)
+        dist_receiver2barrier_top = self.r.geo.distance(self.bar_cross_point_3D)
         pld_1 = (
             dist_source2barrier_top
             + dist_receiver2barrier_top
@@ -127,9 +134,9 @@ class InsertionLoss:
         # end legacy section
 
         pld_2 = (
-            self.s.distance(self.bar_cross_point_3D)
-            + self.r.distance(self.bar_cross_point_3D)
-            - self.s.dicstance(self.r)
+            self.s.geo.distance(self.bar_cross_point_3D)
+            + self.r.geo.distance(self.bar_cross_point_3D)
+            - self.s.geo.distance(self.r.geo)
         )
 
         if pld_1 != pld_2:
@@ -147,10 +154,10 @@ class InsertionLoss:
         else:
             return intersect[0]
 
-    def segment_is_grazing_other(self) -> bool:
+    def bar_s_r_grazing(self) -> bool:
         """returns True if either the start or end point of the source-receiver line lie on the barrier line, or vice versa"""
-        l1 = self.horiz_2D_s_r_segment
-        l2 = self.horiz_2D_bar_segment
+        l1 = self.h_section.s_r
+        l2 = self.h_section.bar
 
         return (
             l1.contains(l2.p1)
@@ -161,10 +168,10 @@ class InsertionLoss:
 
     def get_barrier_cross_point_3D_attr(self):
         vert_3Dline_at_intersect = Line(
-            self.horizontal_section.intersect,
-            self.horizontal_section.intersect + Point(0, 0, 1),
+            self.h_section.intersect,
+            self.h_section.intersect + Point(0, 0, 1),
         )
-        bar_cross_3Dpoint = vert_3Dline_at_intersect.intersection(self)[0]
+        bar_cross_3Dpoint = vert_3Dline_at_intersect.intersection(self.b.geo)[0]
         s_r_cross_3Dpoint = vert_3Dline_at_intersect.intersection(self.s_r)[0]
 
         # testing if line of sight is broken vertically
@@ -173,13 +180,13 @@ class InsertionLoss:
             return None
 
         return Point(
-            self.horizontal_section.intersect.x,
-            self.horizontal_section.intersect.y,
+            self.h_section.intersect.x,
+            self.h_section.intersect.y,
             bar_cross_3Dpoint.z,
         )
 
     @staticmethod
-    def get_fresnel_numbers(self, pld, c):
+    def get_fresnel_numbers(pld, c):
         """
         pld = path length difference
         c = speed of sound

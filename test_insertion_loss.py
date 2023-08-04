@@ -4,7 +4,7 @@ from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
 from OctaveBands import OctaveBands
-from sympy.geometry import Point
+from sympy.geometry import Point, Segment
 
 
 def get_random_source():
@@ -13,9 +13,30 @@ def get_random_source():
 
 
 class TestSource(unittest.TestCase):
-    def test_1(self):
+    def test_create_source(self):
+        """Test you can create a source"""
         ob = OctaveBands.get_rand_ob()
         s = Source(Point(0, 0, 0), 100, 3)
+
+    def test_2(self):
+        """test you can make a segment out of a source and receiver"""
+        s = get_random_source()
+        r = Receiver(Point(10, 10, 0))
+        seg = Segment(s.geo, r.geo)
+        self.assertIsInstance(seg, Segment)
+
+class TestReceiver(unittest.TestCase):
+    def test_create_receiver(self):
+        """Test you can create a receiver"""
+        r = Receiver(Point(0, 0, 0))
+        self.assertIsInstance(r, Receiver)
+
+
+class TestBarrier(unittest.TestCase):
+    def test_create_barrier(self):
+        """Test you can create a barrier"""
+        b = Barrier(Segment((0, 0, 0), (1, 1, 1)))
+        self.assertIsInstance(b, Barrier)
 
 
 class TestInsertionLoss(unittest.TestCase):
@@ -25,9 +46,9 @@ class TestInsertionLoss(unittest.TestCase):
     def test_2(self):
         """Test s_r grazes barrier start"""
         s = get_random_source()
-        s.x, s.y, s.z = 0, 0, 0
-        r = Receiver(Point(10, 10, 0), 0)
-        b = Barrier(Point(5, 5, 0), Point(0, 0, 0))
+        s.geo = Point(0, 0, 0)
+        r = Receiver(Point(10, 10, 0))
+        b = Barrier(Segment((5, 5, 0), (5, 0, 0)))
 
         self.assertEqual(InsertionLoss(s, r, b).il_ari, 0)
         self.assertEqual(InsertionLoss(s, r, b).il_fresnel, 0)

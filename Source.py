@@ -8,12 +8,12 @@ class Source():
     """
     def __init__(
         self,
-        point: Point,
+        geo: Point,
         dBA: float,
         ref_dist: float,
         octave_band_levels: OctaveBands = None,
     ):
-        self.point = point
+        self.geo = geo
         self.reference_distance = ref_dist
         self.octave_band_levels = octave_band_levels
         if octave_band_levels is None:
