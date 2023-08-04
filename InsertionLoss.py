@@ -14,18 +14,74 @@ def log(*args):
         print(*args)
 
 
+class HorizontalSection:
+    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
+        self.s = Point(source.x, source.y, 0)
+        self.r = Point(receiver.x, receiver.y, 0)
+        self.s_r = Segment(self.s, self.r)
+        self.bar_p1 = Point(barrier.p1.x, barrier.p1.y, 0)
+        self.bar_p2 = Point(barrier.p2.x, barrier.p2.y, 0)
+        self.bar = Segment(self.bar_p1, self.bar_p2)
+        try:
+            self.intersect = self.s_r.intersection(self.bar)[0]
+        except IndexError:
+            log("barrier fails HORIZONTAL test")
+            self.intersect = None
+
+
+class VerticalSection:
+    def __init__(
+        self,
+        source: Source,
+        receiver: Receiver,
+        bar_cross_point_3D: Point,
+        h_sect: HorizontalSection,
+    ):
+        self.s = Point(0, source.z, 0)
+        self.r = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
+        self.s_r = Segment(self.s, self.r)
+        self.bar_cross_point = Point(
+            self.h_sect.s.distance(h_sect.intersect),
+            bar_cross_point_3D.z,
+            0,
+        )
+        self.bar = Ray(self.bar_cross_point, self.bar_cross_point + Point(0, -1, 0))
+
+        try:
+            self.intersect = self.s_r.intersection(self.bar)[0]
+        except IndexError:
+            log("barrier fails VERTICAL test")
+            self.intersect = None
+
+
 class InsertionLoss:
     def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
         self.b = barrier
         self.s = source
         self.r = receiver
-
         self.s_r = Segment(self.s, self.r)
-        # self.update_horizontal_section_attr()
-        self.horizontal_section = HorizontalSection(self.b, self.s, self.r)
+
+        # init to 0, None
+        self.h_section = None
+        self.bar_cross_point_3D = None
+        self.v_section = None
+        self.pld = 0
+        self.il_ari = 0
+        self.il_fresnel = 0
+
+        # update if we can
+        self.h_section = HorizontalSection(self.b, self.s, self.r)
+        if self.h_section.intersect is None:
+            return
+
         self.bar_cross_point_3D = self.get_barrier_cross_point_3D_attr()
-        # self.update_vertical_section_attr()
-        self.vertical_section = VerticalSection(self.b, self.s, self.r)
+        if self.bar_cross_point_3D is None:
+            return
+
+        self.v_section = VerticalSection(self.b, self.s, self.r)
+        if self.v_section.intersect is None:
+            return
+
         self.pld = self.get_pld()
         self.il_ari = self.get_ARI_il()
         self.il_fresnel = self.get_fresnel_il()
@@ -54,8 +110,12 @@ class InsertionLoss:
 
     def get_pld(self):
         # this section is legacy... hope to delete
-        dist_source2receiver_horizontal = self.horiz_2D_s.distance(self.horiz_2D_r)
-        dist_source2bar_horizontal = self.horiz_2D_s.distance(self.horiz_2D_intersect)
+        dist_source2receiver_horizontal = self.horizontal_section.s.distance(
+            self.horizontal_section.r
+        )
+        dist_source2bar_horizontal = self.horizontal_section.s.distance(
+            self.horizontal_section.intersect
+        )
         dist_source2receiver_propogation = self.s_r.length
         dist_source2barrier_top = self.s.distance(self.bar_cross_point_3D)
         dist_receiver2barrier_top = self.r.distance(self.bar_cross_point_3D)
@@ -101,17 +161,21 @@ class InsertionLoss:
 
     def get_barrier_cross_point_3D_attr(self):
         vert_3Dline_at_intersect = Line(
-            self.horiz_2D_intersect, self.horiz_2D_intersect + Point(0, 0, 1)
+            self.horizontal_section.intersect,
+            self.horizontal_section.intersect + Point(0, 0, 1),
         )
         bar_cross_3Dpoint = vert_3Dline_at_intersect.intersection(self)[0]
         s_r_cross_3Dpoint = vert_3Dline_at_intersect.intersection(self.s_r)[0]
 
         # testing if line of sight is broken vertically
-        if s_r_cross_3Dpoint.z < bar_cross_3Dpoint.z:
-            raise Exception("barrier fails EASY vertical test")
+        if s_r_cross_3Dpoint.z > bar_cross_3Dpoint.z:
+            log("barrier fails VERTICAL test during 3D cross point creation" "")
+            return None
 
         return Point(
-            self.horiz_2D_intersect.x, self.horiz_2D_intersect.y, bar_cross_3Dpoint.z
+            self.horizontal_section.intersect.x,
+            self.horizontal_section.intersect.y,
+            bar_cross_3Dpoint.z,
         )
 
     @staticmethod
@@ -188,41 +252,3 @@ class InsertionLoss:
             barrier_IL = 0
 
         return barrier_IL
-
-
-class HorizontalSection:
-    def __init__(self, barrier: Barrier, source: Source, receiver: Receiver):
-        self.s = Point(source.x, source.y, 0)
-        self.r = Point(receiver.x, receiver.y, 0)
-        self.s_r = Segment(self.s, self.r)
-        self.bar_p1 = Point(barrier.p1.x, barrier.p1.y, 0)
-        self.bar_p2 = Point(barrier.p2.x, barrier.p2.y, 0)
-        self.bar = Segment(self.bar_p1, self.bar_p2)
-        try:
-            self.intersect = self.s_r.intersection(self.bar)[0]
-        except IndexError:
-            self.intersect = None
-
-
-class VerticalSection:
-    def __init__(
-        self,
-        source: Source,
-        receiver: Receiver,
-        bar_cross_point_3D: Point,
-        h_sect: HorizontalSection,
-    ):
-        self.s = Point(0, source.z, 0)
-        self.r = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
-        self.s_r = Segment(self.s, self.r)
-        self.bar_cross_point = Point(
-            self.h_sect.s.distance(h_sect.intersect),
-            bar_cross_point_3D.z,
-            0,
-        )
-        self.bar = Ray(self.bar_cross_point, self.bar_cross_point + Point(0, -1, 0))
-
-        try:
-            self.intersect = self.s_r.intersection(self.bar)[0]
-        except IndexError:
-            self.intersect = None
