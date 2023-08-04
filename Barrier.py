@@ -1,15 +1,4 @@
-from Source import Source  # for type hinting
-from Receiver import Receiver  # for type hinting
 from sympy import Segment
-from acoustics.decibel import dbsum
-import insertion_loss_methods as il_methods
-
-DEBUG = True
-
-
-def log(*args):
-    if DEBUG:
-        print(*args)
 
 
 class Barrier(Segment):
