@@ -4,6 +4,18 @@ from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
 from OctaveBands import OctaveBands
+from sympy.geometry import Point
+
+
+def get_random_source():
+    ob = OctaveBands.get_rand_ob()
+    return Source(Point(0, 0, 0), 100, 3, ob)
+
+
+class TestSource(unittest.TestCase):
+    def test_1(self):
+        ob = OctaveBands.get_rand_ob()
+        s = Source(Point(0, 0, 0), 100, 3)
 
 
 class TestInsertionLoss(unittest.TestCase):
@@ -11,8 +23,14 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertTrue(True)
 
     def test_2(self):
-        """Test barrier start grazes s_r"""
-        self.assertTrue(False)
+        """Test s_r grazes barrier start"""
+        s = get_random_source()
+        s.x, s.y, s.z = 0, 0, 0
+        r = Receiver(Point(10, 10, 0), 0)
+        b = Barrier(Point(5, 5, 0), Point(0, 0, 0))
+
+        self.assertEqual(InsertionLoss(s, r, b).il_ari, 0)
+        self.assertEqual(InsertionLoss(s, r, b).il_fresnel, 0)
 
     def test_3(self):
         """Test barrier end grazes s_r"""

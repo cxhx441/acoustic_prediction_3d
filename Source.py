@@ -1,9 +1,7 @@
 from sympy import Point
-import math
-from random import randint
 from OctaveBands import OctaveBands
 
-class Source(Point):
+class Source():
     """ A source of sound.
         Attributes:
             dBA: The dBA level of the source. If octave_band_levels are given, this is overridden.
@@ -15,7 +13,7 @@ class Source(Point):
         ref_dist: float,
         octave_band_levels: OctaveBands = None,
     ):
-        super().__init__(point.x, point.y, point.z)
+        self.point = point
         self.reference_distance = ref_dist
         self.octave_band_levels = octave_band_levels
         if octave_band_levels is None:
