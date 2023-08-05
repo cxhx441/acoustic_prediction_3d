@@ -54,6 +54,12 @@ class VerticalSection:
             self.intersect = None
 
 
+HORIZONTAL_ERR = "h_section.intersect is None"
+GRAZING_ERR = "Grazing"
+POINT_3D_ERR = "bar_cross_point_3D is None"
+VERTICAL_ERR = "v_section.intersect is None"
+
+
 class InsertionLoss:
     def __init__(self, source: Source, receiver: Receiver, barrier: Barrier):
         self.s = source
@@ -69,24 +75,32 @@ class InsertionLoss:
         self.il_ari = 0
         self.il_fresnel = 0
 
+        self.error = None
         # update if we can
         self.h_section = HorizontalSection(self.s.geo, self.r.geo, self.b.geo)
         if self.h_section.intersect is None:
-            log("h_section.intersect is None")
+            self.error = HORIZONTAL_ERR
+            log(self.error)
             return
 
         if self.bar_s_r_grazing():
-            log("Grazing is True")
+            self.error = GRAZING_ERR
+            log(self.error)
             return
 
         self.bar_cross_point_3D = self.get_barrier_cross_point_3D_attr()
         if self.bar_cross_point_3D is None:
-            log("bar_cross_point_3D is None")
+            self.error = POINT_3D_ERR
+            log(self.error)
             return
 
-        self.v_section = VerticalSection(self.s.geo, self.r.geo, self.bar_cross_point_3D, self.h_section)
+        self.v_section = VerticalSection(
+            self.s.geo, self.r.geo, self.bar_cross_point_3D, self.h_section
+        )
+        # TODO I don't think this is possible... vert check happens above.
         if self.v_section.intersect is None:
-            log("v_section.intersect is None")
+            self.error = VERTICAL_ERR
+            log(self.error)
             return
 
         self.pld = self.get_pld()
@@ -117,12 +131,8 @@ class InsertionLoss:
 
     def get_pld(self):
         # this section is legacy... hope to delete
-        dist_source2receiver_horizontal = self.h_section.s.distance(
-            self.h_section.r
-        )
-        dist_source2bar_horizontal = self.h_section.s.distance(
-            self.h_section.intersect
-        )
+        dist_source2receiver_horizontal = self.h_section.s.distance(self.h_section.r)
+        dist_source2bar_horizontal = self.h_section.s.distance(self.h_section.intersect)
         dist_source2receiver_propogation = self.s_r.length
         dist_source2barrier_top = self.s.geo.distance(self.bar_cross_point_3D)
         dist_receiver2barrier_top = self.r.geo.distance(self.bar_cross_point_3D)
@@ -200,30 +210,34 @@ class InsertionLoss:
         # assume infinite barrier see Mehta for correction under finite barrier.
         barrier_finite_infinite_correction = 1.0
         Kb_barrier_constant = 5  # assume Kb (barrier const.) for wall=5, berm=8
-        barrier_attenuate_limit = 20  # wall limit = 20 berm limit = 23
+        barrier_il_limit = 20  # wall limit = 20 berm limit = 23
 
-        ob_barrier_attenuation_list = []
-        for N in fresnel_nums:
+        ob_barrier_il_list = [None]*len(fresnel_nums)
+        for i, N in enumerate(fresnel_nums):
             n_d = math.sqrt(2 * math.pi * N)
-            ob_barrier_attenuation = (
-                (20 * math.log10(n_d / math.tanh(n_d)))
-                + Kb_barrier_constant
-                + line_point_correction
-            ) ** barrier_finite_infinite_correction
-
-            if ob_barrier_attenuation > barrier_attenuate_limit:
-                ob_barrier_attenuation = barrier_attenuate_limit
-            ob_barrier_attenuation_list.append(ob_barrier_attenuation)
+            try:
+                ob_barrier_il = (
+                    (20 * math.log10(n_d / math.tanh(n_d)))
+                    + Kb_barrier_constant
+                    + line_point_correction
+                ) ** barrier_finite_infinite_correction
+            except ZeroDivisionError:
+                ob_barrier_il = 0
+            ob_barrier_il = min(ob_barrier_il, barrier_il_limit)
+            ob_barrier_il_list[i] = ob_barrier_il
+        return ob_barrier_il_list
 
     def get_fresnel_il(self) -> float:
         a_weights = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
         eqmt_lvl = self.s.dBA
+        if self.s.octave_band_levels is None:
+            return 0
         ob_levels = list(self.s.octave_band_levels.get_OB_sound_levels())
         speed_of_sound = 1128
         fresnel_num_list = InsertionLoss.get_fresnel_numbers(self.pld, speed_of_sound)
-        ob_bar_attenuation = InsertionLoss.get_ob_bar_attenuation(fresnel_num_list)
-        ob_levels = map(operator.sub, ob_levels, ob_bar_attenuation)
-        ob_levels = map(operator.add, ob_levels, a_weights)
+        ob_bar_il = InsertionLoss.get_ob_bar_attenuation(fresnel_num_list)
+        ob_levels = list(map(operator.sub, ob_levels, ob_bar_il))
+        ob_levels = list(map(operator.add, ob_levels, a_weights))
 
         attenuated_aweighted_level = dbsum(ob_levels)
 
