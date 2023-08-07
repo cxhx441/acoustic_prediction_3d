@@ -1,5 +1,11 @@
 import unittest
-from InsertionLoss import InsertionLoss, HORIZONTAL_ERR, VERTICAL_ERR, POINT_3D_ERR, GRAZING_ERR
+from InsertionLoss import (
+    InsertionLoss,
+    HORIZONTAL_ERR,
+    VERTICAL_ERR,
+    POINT_3D_ERR,
+    GRAZING_ERR,
+)
 from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
@@ -10,6 +16,7 @@ from sympy.geometry import Point, Segment
 def get_random_source():
     ob = OctaveBands.get_rand_ob()
     return Source(Point(0, 0, 0), 100, 3, ob)
+
 
 class TestOctaveBands(unittest.TestCase):
     def test_create_ob(self):
@@ -27,11 +34,20 @@ class TestOctaveBands(unittest.TestCase):
         ob = OctaveBands.get_rand_ob()
         self.assertIsInstance(ob, OctaveBands)
 
+    def test_dBA(self):
+        """Test dBA is coming out right from octave bands"""
+        ob = OctaveBands.get_static_ob(100)
+        self.assertAlmostEqual(ob.get_dBA(), 107, delta=0.5)
+        ob = OctaveBands((71, 41, 26, 93, 75, 44, 61, 58))
+        self.assertAlmostEqual(ob.get_dBA(), 90, delta=0.5)
+
+
 class TestSource(unittest.TestCase):
     def test_create_source(self):
         """Test you can create a source"""
         ob = OctaveBands.get_rand_ob()
         s = Source(Point(0, 0, 0), 100, 3)
+        s = Source(Point(0, 0, 0), 100, 3, ob)
 
     def test_2(self):
         """test you can make a segment out of a source and receiver"""
@@ -39,6 +55,7 @@ class TestSource(unittest.TestCase):
         r = Receiver(Point(10, 10, 0))
         seg = Segment(s.geo, r.geo)
         self.assertIsInstance(seg, Segment)
+
 
 class TestReceiver(unittest.TestCase):
     def test_create_receiver(self):
