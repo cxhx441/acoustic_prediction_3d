@@ -11,6 +11,21 @@ def get_random_source():
     ob = OctaveBands.get_rand_ob()
     return Source(Point(0, 0, 0), 100, 3, ob)
 
+class TestOctaveBands(unittest.TestCase):
+    def test_create_ob(self):
+        """Test you can create an octave band"""
+        ob = OctaveBands([100] * 8)
+        self.assertIsInstance(ob, OctaveBands)
+
+    def test_create_static_ob(self):
+        """Test you can create an octave band"""
+        ob = OctaveBands.get_static_ob(100)
+        self.assertIsInstance(ob, OctaveBands)
+
+    def test_create_rand_ob(self):
+        """Test you can create an octave band"""
+        ob = OctaveBands.get_rand_ob()
+        self.assertIsInstance(ob, OctaveBands)
 
 class TestSource(unittest.TestCase):
     def test_create_source(self):
