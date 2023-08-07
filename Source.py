@@ -1,11 +1,13 @@
 from sympy import Point
 from OctaveBands import OctaveBands
 
-class Source():
-    """ A source of sound.
-        Attributes:
-            dBA: The dBA level of the source. If octave_band_levels are given, this is overridden.
+
+class Source:
+    """A source of sound.
+    Attributes:
+        dBA: The dBA level of the source. If octave_band_levels are given, this is overridden.
     """
+
     def __init__(
         self,
         geo: Point,
@@ -22,10 +24,15 @@ class Source():
             self.dBA = self.octave_band_levels.get_dBA()
 
     def set_dBA(self, dBA) -> None:
+        """
+        Set the dBA level of the source.
+        This overrides the octave band levels, setting them to zero
+        """
         self.octave_band_levels = None
         self.dBA = dBA
 
     def set_octave_band_levels(self, octave_band_levels: OctaveBands) -> None:
+        """Set the octave band levels of the source. This overrides the dBA level."""
         if not isinstance(octave_band_levels, OctaveBands):
             raise TypeError("octave_band_levels must be of type OctaveBands")
         self.octave_band_levels = octave_band_levels
