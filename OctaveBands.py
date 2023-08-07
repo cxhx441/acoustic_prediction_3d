@@ -1,8 +1,11 @@
 from random import randint
 from math import log10
+from functools import reduce
 
 
 class OctaveBands:
+    OB_A_WEIGHTING_LIST = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
+
     def __init__(self, octave_bands: tuple[float]) -> None:
         """
         octave_bands must be an iterable of 8 floats corresponding to
@@ -33,25 +36,22 @@ class OctaveBands:
         random octave bands for testing
         lower and upper are the bounds for the random ob values. default is 0 to 100
         """
-
-        def rand_db():
-            return randint(lower, upper)
-
-        return OctaveBands([rand_db() for _ in range(8)])
+        return OctaveBands([randint(lower, upper) for _ in range(8)])
 
     def get_OB_sound_levels(self) -> tuple[float]:
         return tuple(self.octave_bands.values())
 
     def get_OB_A_weigthed_sound_levels(self) -> list[float]:
-        ob_a_weighting_list = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
-        return [x + y for x, y in zip(self.get_OB_sound_levels(), ob_a_weighting_list)]
+        return [
+            x + y
+            for x, y in zip(self.get_OB_sound_levels(), OctaveBands.OB_A_WEIGHTING_LIST)
+        ]
 
     def get_dBA(self) -> float:
-        # return acoustics.decibel.dbadd(self.get_OB_A_weigthed_sound_levels(), [])
-        dBA = 0
+        pressure = 0
         for lvl in self.get_OB_A_weigthed_sound_levels():
-            dBA += 10 ** (lvl / 10)
-        return 10 * log10(dBA)
+            pressure += 10 ** (lvl / 10)
+        return 10 * log10(pressure)
 
     # def __str__(self):
     #     return str(self.get_OB_sound_levels())
