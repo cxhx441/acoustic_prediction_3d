@@ -12,16 +12,63 @@ from Barrier import Barrier
 from OctaveBands import OctaveBands
 from sympy.geometry import Point, Segment
 
-"""
-# TODO
-test perpendicular s_r to bar gives same answer when sliding intersection point
-test rotations give same answer
-"""
-
 
 def get_random_source():
     ob = OctaveBands.get_rand_ob()
     return Source(Point(0, 0, 0), 100, 3, ob)
+
+
+class TestOctaveBands(unittest.TestCase):
+    def test_create_ob(self):
+        """Test you can create an octave band"""
+        ob = OctaveBands([100] * 8)
+        self.assertIsInstance(ob, OctaveBands)
+
+    def test_create_static_ob(self):
+        """Test you can create an octave band"""
+        ob = OctaveBands.get_static_ob(100)
+        self.assertIsInstance(ob, OctaveBands)
+
+    def test_create_rand_ob(self):
+        """Test you can create an octave band"""
+        ob = OctaveBands.get_rand_ob()
+        self.assertIsInstance(ob, OctaveBands)
+
+    def test_dBA(self):
+        """Test dBA is coming out right from octave bands"""
+        ob = OctaveBands.get_static_ob(100)
+        self.assertAlmostEqual(ob.get_dBA(), 107, delta=0.5)
+        ob = OctaveBands((71, 41, 26, 93, 75, 44, 61, 58))
+        self.assertAlmostEqual(ob.get_dBA(), 90, delta=0.5)
+
+
+class TestSource(unittest.TestCase):
+    def test_create_source(self):
+        """Test you can create a source"""
+        ob = OctaveBands.get_rand_ob()
+        s = Source(Point(0, 0, 0), 100, 3)
+        s = Source(Point(0, 0, 0), 100, 3, ob)
+
+    def test_2(self):
+        """test you can make a segment out of a source and receiver"""
+        s = get_random_source()
+        r = Receiver(Point(10, 10, 0))
+        seg = Segment(s.geo, r.geo)
+        self.assertIsInstance(seg, Segment)
+
+
+class TestReceiver(unittest.TestCase):
+    def test_create_receiver(self):
+        """Test you can create a receiver"""
+        r = Receiver(Point(0, 0, 0))
+        self.assertIsInstance(r, Receiver)
+
+
+class TestBarrier(unittest.TestCase):
+    def test_create_barrier(self):
+        """Test you can create a barrier"""
+        b = Barrier(Segment((0, 0, 0), (1, 1, 1)))
+        self.assertIsInstance(b, Barrier)
 
 
 class TestInsertionLoss(unittest.TestCase):
@@ -143,6 +190,12 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
         self.assertEqual(il.error, HORIZONTAL_ERR)
+
+    """
+    # TODO
+    test perpendicular s_r to bar gives same answer when sliding intersection point
+    test rotations give same answer
+    """
 
 
 if __name__ == "__main__":
