@@ -39,15 +39,18 @@ class OctaveBands:
         return OctaveBands([randint(lower, upper) for _ in range(8)])
 
     def get_OB_sound_levels(self) -> tuple[float]:
+        """Return the octave bands as a tuple"""
         return tuple(self.octave_bands.values())
 
     def get_OB_A_weigthed_sound_levels(self) -> list[float]:
+        """Return the A-weighted octave bands"""
         return [
             x + y
             for x, y in zip(self.get_OB_sound_levels(), OctaveBands.OB_A_WEIGHTING_LIST)
         ]
 
     def get_dBA(self) -> float:
+        """Return the dBA level of the octave bands"""
         pressure = 0
         for lvl in self.get_OB_A_weigthed_sound_levels():
             pressure += 10 ** (lvl / 10)
