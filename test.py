@@ -191,6 +191,28 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertEqual(il.il_fresnel, 0)
         self.assertEqual(il.error, HORIZONTAL_ERR)
 
+    def test_16(self):
+        """Mukilteo sheet For Pres-grnd"""
+        ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
+        s = Source(Point(0, 0, 9), 71, 30, ob)
+        r = Receiver(Point(0, 68, 20))
+        b = Barrier(Segment((-10, 13, 19), (10, 13, 19)))
+        il = InsertionLoss(s, r, b)
+        self.assertAlmostEqual(il.pld, 2.5263, places=4)
+        self.assertEqual(il.il_ari, 11)
+        self.assertAlmostEqual(il.il_fresnel, 17.26378, places=5)
+
+    def test_17(self):
+        """Mukilteo sheet For Pres-6ft"""
+        ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
+        s = Source(Point(0, 0, 22), 71, 30, ob)
+        r = Receiver(Point(0, 184.61, 22))
+        b = Barrier(Segment((-10, 6, 25.25), (10, 6, 25.25)))
+        il = InsertionLoss(s, r, b)
+        self.assertAlmostEqual(il.pld, 0.8532, places=4)
+        self.assertEqual(il.il_ari, 6)
+        self.assertAlmostEqual(il.il_fresnel, 13.17744, places=5)
+
     """
     # TODO
     test perpendicular s_r to bar gives same answer when sliding intersection point
@@ -199,4 +221,12 @@ class TestInsertionLoss(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
+    s = Source(Point(0, 0, 9), 71, 30, ob)
+    r = Receiver(Point(0, 68, 20))
+    b = Barrier(Segment((-10, 13, 19), (10, 13, 19)))
+    il = InsertionLoss(s, r, b)
+    print(il.pld)
+    print(il.il_ari)
+    print(il.il_fresnel)
