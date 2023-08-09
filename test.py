@@ -221,12 +221,4 @@ class TestInsertionLoss(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
-    s = Source(Point(0, 0, 9), 71, 30, ob)
-    r = Receiver(Point(0, 68, 20))
-    b = Barrier(Segment((-10, 13, 19), (10, 13, 19)))
-    il = InsertionLoss(s, r, b)
-    print(il.pld)
-    print(il.il_ari)
-    print(il.il_fresnel)
+    unittest.main()
