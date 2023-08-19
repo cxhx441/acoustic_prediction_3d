@@ -1,12 +1,13 @@
+from __future__ import annotations
 from random import randint
 from math import log10
-from functools import reduce
+from typing import Sequence
 
 
 class OctaveBands:
     OB_A_WEIGHTING_LIST = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
 
-    def __init__(self, octave_bands: tuple[float]) -> None:
+    def __init__(self, octave_bands: Sequence[float]) -> None:
         """
         octave_bands must be an iterable of 8 floats corresponding to
             center frequencies octave bands 63 to 8kHz
@@ -23,7 +24,7 @@ class OctaveBands:
         }
 
     @staticmethod
-    def get_static_ob(ob_db=100) -> tuple[float]:
+    def get_static_ob(ob_db=100) -> OctaveBands:
         """
         random octave bands for testing
         lower and upper are the bounds for the random ob values. default is 0 to 100
@@ -31,14 +32,14 @@ class OctaveBands:
         return OctaveBands([ob_db] * 8)
 
     @staticmethod
-    def get_rand_ob(lower=0, upper=100) -> tuple[float]:
+    def get_rand_ob(lower=0, upper=100) -> OctaveBands:
         """
         random octave bands for testing
         lower and upper are the bounds for the random ob values. default is 0 to 100
         """
         return OctaveBands([randint(lower, upper) for _ in range(8)])
 
-    def get_OB_sound_levels(self) -> tuple[float]:
+    def get_OB_sound_levels(self) -> tuple[float, ...]:
         """Return the octave bands as a tuple"""
         return tuple(self.octave_bands.values())
 
@@ -51,7 +52,7 @@ class OctaveBands:
 
     def get_dBA(self) -> float:
         """Return the dBA level of the octave bands"""
-        pressure = 0
+        pressure = 0.0
         for lvl in self.get_OB_A_weigthed_sound_levels():
             pressure += 10 ** (lvl / 10)
         return 10 * log10(pressure)
