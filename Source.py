@@ -1,5 +1,6 @@
 from sympy import Point
 from OctaveBands import OctaveBands
+from typing import Optional
 
 
 class Source:
@@ -13,7 +14,7 @@ class Source:
         geo: Point,
         dBA: float,
         ref_dist: float,
-        octave_band_levels: OctaveBands = None,
+        octave_band_levels: Optional[OctaveBands] = None,
     ):
         self.geo = geo
         self.reference_distance = ref_dist
@@ -21,6 +22,7 @@ class Source:
         if octave_band_levels is None:
             self.dBA = dBA
         else:
+            assert isinstance(self.octave_band_levels, OctaveBands)
             self.dBA = self.octave_band_levels.get_dBA()
 
     def set_dBA(self, dBA) -> None:
