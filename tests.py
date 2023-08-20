@@ -3,7 +3,7 @@ import unittest
 from InsertionLoss import (
     InsertionLoss,
     HORIZONTAL_ERR,
-    VERTICAL_ERR,
+    # VERTICAL_ERR,
     POINT_3D_ERR,
     GRAZING_ERR,
     dbsum,
@@ -82,6 +82,7 @@ class TestSource(unittest.TestCase):
         ob = OctaveBands.get_rand_ob()
         s = Source(Point(0, 0, 0), 100, 3)
         s = Source(Point(0, 0, 0), 100, 3, ob)
+        self.assertIsInstance(s, Source)
 
     def test_2(self):
         """test you can make a segment out of a source and receiver"""
