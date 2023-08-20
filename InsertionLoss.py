@@ -6,7 +6,7 @@ import operator
 import math
 from typing import Sequence
 
-DEBUG = True
+DEBUG = False
 
 
 def log(*args):
@@ -135,7 +135,7 @@ class InsertionLoss:
         ]
 
     def get_pld(self):
-        """ TODO remove this legacy section"""
+        """TODO remove this legacy section"""
         # this section is legacy... hope to delete
         # dist_source2receiver_horizontal = self.h_section.s.distance(self.h_section.r)
         # dist_source2bar_horizontal = self.h_section.s.distance(self.h_section.intersect)
