@@ -3,8 +3,8 @@ from Source import Source  # TODO just for type hint
 from Receiver import Receiver  # TODO just for type hint
 from Barrier import Barrier  # TODO just for type hint
 import operator
-from acoustics.decibel import dbsum
 import math
+from typing import Sequence
 
 DEBUG = True
 
@@ -12,6 +12,11 @@ DEBUG = True
 def log(*args):
     if DEBUG:
         print(*args)
+
+
+def dbsum(dBs: Sequence[float]) -> float:
+    pressure_sum = sum([10 ** (dB / 10) for dB in dBs])
+    return 10 * math.log10(pressure_sum)
 
 
 class HorizontalSection:
@@ -212,7 +217,7 @@ class InsertionLoss:
         Kb_barrier_constant = 5  # assume Kb (barrier const.) for wall=5, berm=8
         barrier_il_limit = 20  # wall limit = 20 berm limit = 23
 
-        ob_barrier_il_list = [None]*len(fresnel_nums)
+        ob_barrier_il_list = [None] * len(fresnel_nums)
         for i, N in enumerate(fresnel_nums):
             n_d = math.sqrt(2 * math.pi * N)
             try:
