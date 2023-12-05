@@ -14,7 +14,7 @@ def log(*args):
         print(*args)
 
 
-class HorizontalSection:
+class _HorizontalSection:
     def __init__(self, source: Point, receiver: Point, barrier: Segment):
         self.s = Point(source.x, source.y, 0)
         self.r = Point(receiver.x, receiver.y, 0)
@@ -29,13 +29,13 @@ class HorizontalSection:
             self.intersect = None
 
 
-class VerticalSection:
+class _VerticalSection:
     def __init__(
         self,
         source: Point,
         receiver: Point,
         bar_cross_point_3D: Point,
-        h_sect: HorizontalSection,
+        h_sect: _HorizontalSection,
     ):
         self.s = Point(0, source.z, 0)
         self.r = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
@@ -77,7 +77,7 @@ class InsertionLoss:
 
         self.error = None
         # update if we can
-        self.h_section = HorizontalSection(self.s.geo, self.r.geo, self.b.geo)
+        self.h_section = _HorizontalSection(self.s.geo, self.r.geo, self.b.geo)
         if self.h_section.intersect is None:
             self.error = HORIZONTAL_ERR
             log(self.error)
@@ -94,7 +94,7 @@ class InsertionLoss:
             log(self.error)
             return
 
-        self.v_section = VerticalSection(
+        self.v_section = _VerticalSection(
             self.s.geo, self.r.geo, self.bar_cross_point_3D, self.h_section
         )
         # TODO I don't think this is possible... vert check happens above.
