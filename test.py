@@ -84,7 +84,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, GRAZING_ERR)
+        self.assertEqual(il.failure, GRAZING_ERR)
 
     def test_3(self):
         """Test s_r grazes barrier end"""
@@ -96,7 +96,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, GRAZING_ERR)
+        self.assertEqual(il.failure, GRAZING_ERR)
 
     def test_4(self):
         """Test barrier grazes s"""
@@ -108,7 +108,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, GRAZING_ERR)
+        self.assertEqual(il.failure, GRAZING_ERR)
 
     def test_5(self):
         """Test barrier grazes r"""
@@ -120,7 +120,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, GRAZING_ERR)
+        self.assertEqual(il.failure, GRAZING_ERR)
 
     def test_6(self):
         """Test miss in just horizontal section"""
@@ -131,7 +131,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, HORIZONTAL_ERR)
+        self.assertEqual(il.failure, HORIZONTAL_ERR)
 
     def test_8(self):
         """Test miss in just vertical section"""
@@ -142,7 +142,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, POINT_3D_ERR)
+        self.assertEqual(il.failure, POINT_3D_ERR)
 
     def test_9(self):
         """Test miss in vertical & horizontal section"""
@@ -153,7 +153,7 @@ class TestInsertionLoss(unittest.TestCase):
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, HORIZONTAL_ERR)
+        self.assertEqual(il.failure, HORIZONTAL_ERR)
 
     def test_12(self):
         """Test pld == 0"""
@@ -165,7 +165,7 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertEqual(il.pld, 0)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, None)
+        self.assertEqual(il.failure, None)
 
     def test_13(self):
         """Test no octave band levels gives no fresnel IL"""
@@ -177,7 +177,7 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertEqual(il.pld, 2)
         self.assertEqual(il.il_ari, 10)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, None)
+        self.assertEqual(il.failure, None)
 
     def test_15(self):
         """Test parallel s_r and bar give no IL"""
@@ -189,7 +189,7 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertEqual(il.pld, 0)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
-        self.assertEqual(il.error, HORIZONTAL_ERR)
+        self.assertEqual(il.failure, HORIZONTAL_ERR)
 
     def test_16(self):
         """Mukilteo sheet For Pres-grnd"""

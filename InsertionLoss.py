@@ -75,23 +75,23 @@ class InsertionLoss:
         self.il_ari = 0
         self.il_fresnel = 0
 
-        self.error = None
+        self.failure = None
         # update if we can
         self.h_section = _HorizontalSection(self.s.geo, self.r.geo, self.b.geo)
         if self.h_section.intersect is None:
-            self.error = HORIZONTAL_ERR
-            log(self.error)
+            self.failure = HORIZONTAL_ERR
+            log(self.failure)
             return
 
         if self.bar_s_r_grazing():
-            self.error = GRAZING_ERR
-            log(self.error)
+            self.failure = GRAZING_ERR
+            log(self.failure)
             return
 
         self.bar_cross_point_3D = self.get_barrier_cross_point_3D_attr()
         if self.bar_cross_point_3D is None:
-            self.error = POINT_3D_ERR
-            log(self.error)
+            self.failure = POINT_3D_ERR
+            log(self.failure)
             return
 
         self.v_section = _VerticalSection(
@@ -99,8 +99,8 @@ class InsertionLoss:
         )
         # TODO I don't think this is possible... vert check happens above.
         if self.v_section.intersect is None:
-            self.error = VERTICAL_ERR
-            log(self.error)
+            self.failure = VERTICAL_ERR
+            log(self.failure)
             return
 
         self.pld = self.get_pld()
