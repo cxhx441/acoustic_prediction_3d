@@ -14,7 +14,15 @@ class Source:
         dBA: float,
         ref_dist: float,
         octave_band_levels: OctaveBands = None,
-    ):
+        count: float = 1,
+        tag: str = None,
+        path: str = None,
+        make: str = None,
+        model: str = None,
+        q_tested: float = 2,
+        q_installed: float = 2,
+        insertion_loss: float = 0
+    ) -> None:
         self.geo = geo
         self.reference_distance = ref_dist
         self.octave_band_levels = octave_band_levels
@@ -22,6 +30,14 @@ class Source:
             self.dBA = dBA
         else:
             self.dBA = self.octave_band_levels.get_dBA()
+        self.count = count
+        self.tag = tag
+        self.path = path
+        self.make = make
+        self.model = model
+        self.q_tested = q_tested
+        self.q_installed = q_installed
+        self.insertion_loss = insertion_loss
 
     def set_dBA(self, dBA) -> None:
         """
