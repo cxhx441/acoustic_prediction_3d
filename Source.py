@@ -39,6 +39,7 @@ class Source:
         self.q_tested = q_tested
         self.q_installed = q_installed
         self.insertion_loss = insertion_loss
+        self.affected_receivers = set()
 
     def set_dBA(self, dBA) -> None:
         """
@@ -54,3 +55,10 @@ class Source:
             raise TypeError("octave_band_levels must be of type OctaveBands")
         self.octave_band_levels = octave_band_levels
         self.dBA = self.octave_band_levels.get_dBA()
+
+    def add_receiver(self, r: Receiver):
+        self.affected_receivers.add(r)
+
+    def remove_receiver(self, r: Receiver):
+        if s in self.affected_receivers:
+            self.affected_receivers.remove(r)

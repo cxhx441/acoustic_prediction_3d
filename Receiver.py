@@ -13,3 +13,12 @@ class Receiver():
         self.name = name
         self.dBA_limit = dBA_limit
         self.dBA_predicted = dBA_limit
+        self.affecting_sources = set()
+
+    def add_source(self, s: Source):
+        self.affecting_sources.add(s)
+
+    def remove_source(self, s: Source):
+        if s in self.affecting_sources:
+            self.affecting_sources.remove(s)
+
