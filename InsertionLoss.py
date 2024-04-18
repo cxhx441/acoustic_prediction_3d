@@ -1,7 +1,5 @@
+from __future__ import annotations
 from sympy import Point, Line, Segment, Ray
-from Source import Source  # TODO just for type hint
-from Receiver import Receiver  # TODO just for type hint
-from Barrier import Barrier  # TODO just for type hint
 import operator
 import math
 from typing import Sequence
