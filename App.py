@@ -2,101 +2,148 @@ from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
 from InsertionLoss import InsertionLoss
-from math import log10, sqrt
+from math import log10, pi
 import sympy
+
+BARRIER_METHODS = ('ARI', 'FRESNEL')
+class SoundPath:
+    def __init__(self, directivity_loss: float = 0, ignore: bool = False, allowed_barriers: set = None, barrier_method: str = 'ARI'):
+        self.allowed_barriers = allowed_barriers
+        if self.allowed_barriers is None: self.allowed_barriers = set()
+        self.directivity_loss = directivity_loss
+        self.ignore = ignore
+        self.barrier_method = barrier_method
+        if self.barrier_method not in BARRIER_METHODS:
+            raise ValueError(f'Barrier method must be one of {BARRIER_METHODS}')
 
 class App:
     def __init__(self):
-        self.sources = set()
-        self.receivers = set()
-        self.barriers = set()
-        self.directivity = set() # (s, r)
-        self.ignore = set() # (s, r)
+        self.sound_path_matrix = list()
+        self.sources = list()
+        self.receivers = list()
+        self.barriers = list()
+
+    # def source_idx(self, s: Source):
+    #     return self.sources.index(s)
+    #
+    # def receiver_idx(self, r: Receiver):
+    #     return self.receivers.index(r)
+    #
+    # def barrier_idx(self, b: Barrier):
+    #     return self.barriers.index(b)
 
     # adders
     def add_source(self, s: Source):
-        self.sources.add(s)
+        self.sources.append(s)
+        self.sound_path_matrix.append([SoundPath()] * len(self.receivers))
 
     def add_receiver(self, r: Receiver):
-        self.receivers.add(r)
+        self.receivers.append(r)
+        for s_i in range(len(self.sources)):
+            self.sound_path_matrix[s_i].append(SoundPath())
 
     def add_barrier(self, b: Barrier):
-        self.barriers.add(b)
+        self.barriers.append(b)
 
     # removers
     def remove_source(self, s: Source):
-        if s in self.sources:
-            self.sources.remove(s)
-        for r in self.receivers:
-            r.remove_source(s)
-            if (s, r) in self.directivity:
-                self.directivity.remove((s, r))
-            if (s, r) in self.ignore:
-                self.ignore.remove((s, r))
-        for b in self.barriers:
-            b.remove_source(s)
+        s_target_i = self.sources.index(s)
+        del self.sources[s_target_i]
+        for s_i in range(len(self.sources)):
+            del self.sound_path_matrix[s_i][s_target_i]
 
     def remove_receiver(self, r: Receiver):
-        if r in self.receivers:
-            self.receivers.remove(r)
-        for s in self.sources:
-            s.remove_receiver(r)
-            if (s, r) in self.directivity:
-                self.directivity.remove((s, r))
-            if (s, r) in self.ignore:
-                self.ignore.remove((s, r))
-        for b in self.barriers:
-            b.remove_receiver(r)
+        r_target_i = self.receivers.index(r)
+        del self.receivers[r_target_i]
+        for r_i in range(len(self.receivers)):
+            del self.sound_path_matrix[r_i][r_target_i]
 
     def remove_barrier(self, b: Barrier):
-        if b in self.barriers:
-            self.barriers.remove(b)
-        for r in self.receivers.values():
-            r.remove_barrier(b)
+        b_target_i = self.barriers.index(b)
+        del self.barriers[b_target_i]
+        for s_i in range(len(self.sources)):
+            for r_i in range(len(self.receivers)):
+                self.sound_path_matrix[s_i][r_i].allowed_barriers.remove(b)
 
-    def update_dBA_predictions(self, r: Receiver|None):
-        if r is not None:
-            for rec in self.receivers:
-                self.update_predictions(rec)
+    def set_directivity_loss(self, s: Source, r: Receiver, directivity_loss: float):
+        s_i = self.sources.index(s)
+        r_i = self.receivers.index(r)
+        sp = self.sound_path_matrix[s_i][r_i]
+        sp.directivity_loss = directivity_loss
+
+    def set_ignore(self, s: Source, r: Receiver, ignore: bool):
+        s_i = self.sources.index(s)
+        r_i = self.receivers.index(r)
+        sp = self.sound_path_matrix[s_i][r_i]
+        sp.ignore = ignore
+
+    def set_allowed_barriers(self, s: Source, r: Receiver, barriers: set):
+        s_i = self.sources.index(s)
+        r_i = self.receivers.index(r)
+        sp = self.sound_path_matrix[s_i][r_i]
+        sp.allowed_barriers = barriers
+
+    def add_allowed_barriers(self, s: Source, r: Receiver, barriers: set):
+        s_i = self.sources.index(s)
+        r_i = self.receivers.index(r)
+        sp = self.sound_path_matrix[s_i][r_i]
+        sp.allowed_barriers = sp.allowed_barriers | barriers
+
+    def remove_allowed_barriers(self, s: Source, r: Receiver, barriers: set):
+        s_i = self.sources.index(s)
+        r_i = self.receivers.index(r)
+        sp = self.sound_path_matrix[s_i][r_i]
+        sp.allowed_barriers = sp.allowed_barriers - barriers
+
+    def update_dBA_predictions(self, r: Receiver|None = None):
+        if r is None:
+            for inner_r in self.receivers:
+                self.update_dBA_predictions(inner_r)
             return
 
-        overall_pressure = 0
-        for s in r.affecting_sources:
-            # IGNORE
-            if (s, r) in self.ignore:
-                continue
+        r_i = self.receivers.index(r)
+        sound_paths = []
+        for s_i in range(len(self.sources)):
+            sound_paths.append(self.sound_path_matrix[s_i][r_i])
 
+        overall_pressure = 0
+        for i in range(len(self.sources)):
+            sp = sound_paths[i]
+            s = self.sources[i]
+            if sp.ignore is True:
+                continue
 
             # SOUND POWER
             LwA = s.dBA
-            if s.ref_dist != 0:
+            if s.reference_distance_ft != 0:
                 q = s.q_tested
-                r = (s.ref_dist/3.28)
-                pi = 3.14159265359
-                LwA = s.dBA + abs(10*log10(( q / ( 4 * pi * (r**2) ) ) ) )
+                radius = (s.reference_distance_ft/3.28)
+                LwA = s.dBA + abs(10*log10(( ( 4 * pi * (radius**2) ) / q ) ) )
 
             # DISTANCE LOSS
             distance_ft = s.geo.distance(r.geo)
             distance_m = distance_ft / 3.28
-            r = distance_m
-            distance_loss = 10*log10( q / ( 4 * pi * (r**2) ) )
+            radius = distance_m
+            distance_loss = 10*log10( ( 4 * pi * (radius**2) ) / q )
 
             # BARRIER LOSS
             b_used = None
             b_il = 0
-            for b in self.barriers:
-                if (s, r) in b.s_r_combos:
+            for b in sp.allowed_barriers:
+                if sp.barrier_method == 'FRESNEL':
+                    calculated_b_il = InsertionLoss(s, r, b).get_fresnel_il()
+                else:
+                    calculated_b_il = InsertionLoss(s, r, b).get_ARI_il()
+
+                if calculated_b_il > b_il:
+                    b_il = calculated_b_il
                     b_used = b
-            if b_used is not None:
-                b_il = InsertionLoss(s, r, b_used)
 
             # DIRECTIVITY LOSS
-            directivity_loss = 0
-            if (s, r) in self.directivity:
-                directivity_loss = self.directivity[(s, r)]
+            directivity_loss = sp.directivity_loss
 
-            dBA = LwA + distance_loss + b_il + directivity_loss
-            overall_pressure += 10**(dBA)
+            dBA = LwA - distance_loss - b_il - directivity_loss
+            overall_pressure += 10**(dBA/10)
 
-        r.dBA_predicted = 20*log10(overall_pressure)
+        r.dBA_predicted = 10*log10(overall_pressure)
 

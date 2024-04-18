@@ -1,5 +1,5 @@
+from __future__ import annotations
 from sympy import Point
-
 
 class Receiver():
     def __init__(self, geo: Point,
