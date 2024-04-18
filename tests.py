@@ -8,6 +8,7 @@ from InsertionLoss import (
     GRAZING_ERR,
     dbsum,
 )
+from App import App
 from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
@@ -97,7 +98,6 @@ class TestReceiver(unittest.TestCase):
         """Test you can create a receiver"""
         r = Receiver(Point(0, 0, 0))
         self.assertIsInstance(r, Receiver)
-
 
 class TestBarrier(unittest.TestCase):
     def test_create_barrier(self):
@@ -254,6 +254,93 @@ class TestInsertionLoss(unittest.TestCase):
     test rotations give same answer
     """
 
+class TestApp(unittest.TestCase):
+    def test_create_app(self):
+        app = App()
+        self.assertIsInstance(app, App)
+
+    def test_running_app(self):
+        """Test simple app setup"""
+        app = App()
+        s = Source(Point(0, 0, 0), 100, 10)
+        r = Receiver(Point(10, 0, 0))
+        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+
+        app.add_source(s)
+        self.assertEqual(len(app.sources), 1)
+        self.assertEqual(len(app.sound_path_matrix), len(app.sources))
+
+        app.add_receiver(r)
+        self.assertEqual(len(app.receivers), 1)
+        self.assertEqual(len(app.sound_path_matrix[0]), 1)
+
+        app.add_barrier(b)
+        self.assertEqual(len(app.barriers), 1)
+
+        self.assertEqual(len(app.sources), 1)
+        self.assertEqual(len(app.receivers), 1)
+        self.assertEqual(len(app.barriers), 1)
+
+    def test_simple_dbA_prediction_no_barrier_1(self):
+        """Test that the predicted dBA is same as reference distance if same distance away from source"""
+        app = App()
+        s = Source(Point(0, 0, 0), 100, 10)
+        r = Receiver(Point(10, 0, 0))
+        app.add_source(s)
+        app.add_receiver(r)
+
+        app.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+
+    def test_simple_dbA_prediction_no_barrier_2(self):
+        """Test that predicted dBA is -6 when twice the reference distance."""
+        app = App()
+        s = Source(Point(0, 0, 0), 100, 10)
+        r = Receiver(Point(20, 0, 0))
+        app.add_source(s)
+        app.add_receiver(r)
+
+        app.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 94, 1)
+
+    def test_simple_dbA_prediction_no_barrier_3(self):
+        """Test that predicted dBA is +3 when there are two sources equidistant away from source. """
+        app = App()
+        s0 = Source(Point(-10, 0, 0), 100, 10)
+        s1 = Source(Point(+10, 0, 0), 100, 10)
+        r = Receiver(Point(0, 0, 0))
+        app.add_source(s0)
+        app.add_source(s1)
+        app.add_receiver(r)
+
+        app.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 103, 1)
+
+    def test_simple_dbA_prediction_no_barrier_4(self):
+        """Test that predicted dBA is +10 when there are 10 sources equidistant away from source. """
+        app = App()
+        for i in range(10):
+            app.add_source(Source(Point(10, 0, 0), 100, 10))
+        r = Receiver(Point(0, 0, 0))
+        app.add_receiver(r)
+
+        app.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 110)
+
+    def test_simple_dbA_prediction_no_barrier_5(self):
+        """ test 2 receivers. """
+        app = App()
+        for i in range(10):
+            app.add_source(Source(Point(10, 0, 0), 100, 10))
+        r0 = Receiver(Point(0, 0, 0))
+        r1 = Receiver(Point(-10, 0, 0))
+        app.add_receiver(r0)
+        app.add_receiver(r1)
+
+        app.update_dBA_predictions(r0)
+        app.update_dBA_predictions(r1)
+        self.assertEqual(r0.dBA_predicted, 110)
+        self.assertAlmostEqual(r1.dBA_predicted, 104, 1)
 
 if __name__ == "__main__":
     unittest.main()

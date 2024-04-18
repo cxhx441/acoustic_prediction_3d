@@ -1,3 +1,4 @@
+from __future__ import annotations
 from sympy import Point
 from OctaveBands import OctaveBands
 from typing import Optional
@@ -12,7 +13,7 @@ class Source:
     def __init__(self,
                  geo: Point,
                  dBA: float,
-                 ref_dist: float,
+                 reference_distance_ft: float,
                  octave_band_levels: Optional[OctaveBands] = None,
                  count: float = 1,
                  tag: str = None,
@@ -24,7 +25,7 @@ class Source:
                  insertion_loss: float = 0,
                 ) -> None:
         self.geo = geo
-        self.reference_distance = ref_dist
+        self.reference_distance_ft = reference_distance_ft
         self.octave_band_levels = octave_band_levels
         if octave_band_levels is None:
             self.dBA = dBA
