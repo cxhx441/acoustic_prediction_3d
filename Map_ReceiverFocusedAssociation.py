@@ -23,7 +23,7 @@ class Map:
         del self.sources[s.id]
         for r in self.receivers.values():
             for receiver_s_id in r.source_barriers:
-                r.remove_source(self.receivers[receiver_s_id])
+                r._remove_source(self.receivers[receiver_s_id])
 
     def remove_receiver(self, r: Receiver):
         del self.receivers[r.id]

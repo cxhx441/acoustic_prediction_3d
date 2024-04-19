@@ -1,6 +1,7 @@
 from sympy import Point
 from OctaveBands import OctaveBands
 from typing import Optional
+from math import log10, pi
 
 
 class Source:
@@ -24,7 +25,7 @@ class Source:
                  insertion_loss: float = 0,
                 ) -> None:
         self.geo = geo
-        self.reference_distance_ft = reference_distance_ft
+        self.reference_distance_ft = abs(reference_distance_ft)
         self.octave_band_levels = octave_band_levels
         if octave_band_levels is None:
             self.dBA = dBA
@@ -40,11 +41,13 @@ class Source:
         self.q_installed = q_installed
         self.insertion_loss = insertion_loss
 
-    def set_dBA(self, dBA) -> None:
+    def set_dBA(self, dBA, reference_dist_ft=None) -> None:
         """
         Set the dBA level of the source.
         This overrides the octave band levels, setting them to zero
         """
+        if reference_dist_ft is not None:
+            self.reference_distance_ft = reference_dist_ft
         self.octave_band_levels = None
         self.dBA = dBA
 
@@ -54,3 +57,26 @@ class Source:
             raise TypeError("octave_band_levels must be of type OctaveBands")
         self.octave_band_levels = octave_band_levels
         self.dBA = self.octave_band_levels.get_dBA()
+
+    def get_LwA(self):
+        if self.reference_distance_ft == 0:
+            return self.dBA
+        q = self.q_tested
+        r = self.reference_distance_ft/3.28
+        return self.dBA + 10*log10(((4 * pi * (r**2)) / q))
+
+    def get_dBA_at_distance_ft(self, distance_ft: float):
+        return self.dBA - self.get_distance_loss(distance_ft) + self.get_q_effect()
+    def get_distance_loss(self, distance_ft: float):
+        if self.reference_distance_ft == 0:
+            q = self.q_tested
+            r = distance_ft / 3.28  # distance_m
+            return 10*log10((4 * pi * (r**2)) / q)
+        else:
+            r = self.reference_distance_ft
+            return 20*log10(distance_ft / r)
+
+    def get_q_effect(self):
+        q_effect = 10*log10(self.q_installed / self.q_tested)
+        return q_effect
+

@@ -8,13 +8,14 @@ from InsertionLoss import (
     GRAZING_ERR,
     dbsum,
 )
-from App import App
+from SoundField import SoundField
 from Source import Source
 from Receiver import Receiver
 from Barrier import Barrier
 from OctaveBands import OctaveBands
 from sympy.geometry import Point, Segment
 # from acoustics.decibel import dbsum as dbsum_acoustics
+import math
 
 
 def get_random_source():
@@ -254,93 +255,312 @@ class TestInsertionLoss(unittest.TestCase):
     test rotations give same answer
     """
 
-class TestApp(unittest.TestCase):
-    def test_create_app(self):
-        app = App()
-        self.assertIsInstance(app, App)
 
-    def test_running_app(self):
-        """Test simple app setup"""
-        app = App()
+class TestApp(unittest.TestCase):
+    def test_create_sfield(self):
+        sfield = SoundField()
+        self.assertIsInstance(sfield, SoundField)
+
+    def test_running_sfield(self):
+        """Test simple sfield setup"""
+        sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(10, 0, 0))
         b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
 
-        app.add_source(s)
-        self.assertEqual(len(app.sources), 1)
-        self.assertEqual(len(app.sound_path_matrix), len(app.sources))
+        sfield.add(s)
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.sound_path_matrix), len(sfield.sources))
 
-        app.add_receiver(r)
-        self.assertEqual(len(app.receivers), 1)
-        self.assertEqual(len(app.sound_path_matrix[0]), 1)
+        sfield.add(r)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
 
-        app.add_barrier(b)
-        self.assertEqual(len(app.barriers), 1)
+        sfield.add(b)
+        self.assertEqual(len(sfield.barriers), 1)
 
-        self.assertEqual(len(app.sources), 1)
-        self.assertEqual(len(app.receivers), 1)
-        self.assertEqual(len(app.barriers), 1)
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.barriers), 1)
 
     def test_simple_dbA_prediction_no_barrier_1(self):
         """Test that the predicted dBA is same as reference distance if same distance away from source"""
-        app = App()
+        sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(10, 0, 0))
-        app.add_source(s)
-        app.add_receiver(r)
+        sfield.add({s, r})
 
-        app.update_dBA_predictions()
+        sfield.update_dBA_predictions()
         self.assertEqual(r.dBA_predicted, 100)
 
     def test_simple_dbA_prediction_no_barrier_2(self):
         """Test that predicted dBA is -6 when twice the reference distance."""
-        app = App()
+        sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(20, 0, 0))
-        app.add_source(s)
-        app.add_receiver(r)
+        sfield.add({s, r})
 
-        app.update_dBA_predictions()
+        sfield.update_dBA_predictions()
         self.assertAlmostEqual(r.dBA_predicted, 94, 1)
 
     def test_simple_dbA_prediction_no_barrier_3(self):
         """Test that predicted dBA is +3 when there are two sources equidistant away from source. """
-        app = App()
+        sfield = SoundField()
         s0 = Source(Point(-10, 0, 0), 100, 10)
         s1 = Source(Point(+10, 0, 0), 100, 10)
         r = Receiver(Point(0, 0, 0))
-        app.add_source(s0)
-        app.add_source(s1)
-        app.add_receiver(r)
+        sfield.add({s0, s1, r})
 
-        app.update_dBA_predictions()
+        sfield.update_dBA_predictions()
         self.assertAlmostEqual(r.dBA_predicted, 103, 1)
 
     def test_simple_dbA_prediction_no_barrier_4(self):
         """Test that predicted dBA is +10 when there are 10 sources equidistant away from source. """
-        app = App()
+        sfield = SoundField()
         for i in range(10):
-            app.add_source(Source(Point(10, 0, 0), 100, 10))
+            sfield._add_source(Source(Point(10, 0, 0), 100, 10))
         r = Receiver(Point(0, 0, 0))
-        app.add_receiver(r)
+        sfield.add(r)
 
-        app.update_dBA_predictions()
+        sfield.update_dBA_predictions()
         self.assertEqual(r.dBA_predicted, 110)
 
     def test_simple_dbA_prediction_no_barrier_5(self):
         """ test 2 receivers. """
-        app = App()
+        sfield = SoundField()
         for i in range(10):
-            app.add_source(Source(Point(10, 0, 0), 100, 10))
+            sfield._add_source(Source(Point(10, 0, 0), 100, 10))
         r0 = Receiver(Point(0, 0, 0))
         r1 = Receiver(Point(-10, 0, 0))
-        app.add_receiver(r0)
-        app.add_receiver(r1)
+        sfield.add({r0, r1})
 
-        app.update_dBA_predictions(r0)
-        app.update_dBA_predictions(r1)
+        sfield.update_dBA_predictions(r0)
+        sfield.update_dBA_predictions(r1)
         self.assertEqual(r0.dBA_predicted, 110)
         self.assertAlmostEqual(r1.dBA_predicted, 104, 1)
+
+    #def test_sfield_with_barrier_1(self):
+    def test_2_with_sfield(self):
+        """Test s_r grazes barrier start and gives proper dBA prediction."""
+        s = Source(Point(0, 0, 0), 100, math.sqrt(10**2 + 10**2))
+        r = Receiver(Point(10, 10, 0))
+        b = Barrier(Segment((5, 5, 0), (5, 0, 0)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, GRAZING_ERR)
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.remove({s, r, b})
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_3_with_sfield(self):
+        """Test s_r grazes barrier end and gives proper dBA prediction."""
+        s = Source(Point(0, 0, 0), 100, math.sqrt(10**2 + 10**2))
+        r = Receiver(Point(10, 10, 0))
+        b = Barrier(Segment((5, 0, 0), (5, 5, 0)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, GRAZING_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_4_with_sfield(self):
+        """Test barrier grazes s"""
+        s = Source(Point(5, 5, 0), 100, 5)
+        r = Receiver(Point(5, 0, 0))
+        b = Barrier(Segment((0, 0, 0), (10, 10, 0)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, GRAZING_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_5_with_sfield(self):
+        """Test barrier grazes r"""
+        s = Source(Point(5, 0, 0), 100, 5)
+        r = Receiver(Point(5, 5, 0))
+        b = Barrier(Segment((0, 0, 0), (10, 10, 0)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, GRAZING_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_6_with_sfield(self):
+        """Test miss in just horizontal section"""
+        s = Source(Point(5, 0, 5), 100, math.sqrt(15**2 + 10**2))
+        r = Receiver(Point(20, 10, 5))
+        b = Barrier(Segment((0, 5, 6), (10, 5, 6)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, HORIZONTAL_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+
+    def test_8_with_sfield(self):
+        """Test miss in just vertical section"""
+        s = Source(Point(5, 0, 5), 100, math.sqrt(10**2 + 10**2))
+        r = Receiver(Point(5, 10, 15))
+        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, POINT_3D_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+
+    def test_9_with_sfield(self):
+        """Test miss in vertical & horizontal section"""
+        s = Source(Point(5, 0, 5), 100, math.sqrt(15**2 + 10**2 + 10**2))
+        r = Receiver(Point(20, 10, 15))
+        b = Barrier(Segment((0, 5, 6), (10, 5, 6)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, HORIZONTAL_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_12_with_sfield(self):
+        """Test pld == 0"""
+        s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 10**2 + 10**2))
+        r = Receiver(Point(5, 10, 10))
+        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.pld, 0)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, None)
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_13_with_sfield(self):
+        """Test no octave band levels gives no fresnel IL"""
+        s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 8**2 + 0**2))
+        s.octave_band_levels = None
+        r = Receiver(Point(5, 8, 0))
+        b = Barrier(Segment((0, 4, 3), (8, 4, 3)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.pld, 2)
+        self.assertEqual(il.il_ari, 10)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, None)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 90)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 87)
+
+
+    def test_15_sfield(self):
+        """Test parallel s_r and bar give no IL"""
+        s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 10**2 + 10**2))
+        r = Receiver(Point(5, 10, 10))
+        b = Barrier(Segment((6, 10, 10), (6, 0, 0)))
+        il = InsertionLoss(s, r, b)
+        self.assertEqual(il.pld, 0)
+        self.assertEqual(il.il_ari, 0)
+        self.assertEqual(il.il_fresnel, 0)
+        self.assertEqual(il.error, HORIZONTAL_ERR)
+
+        sfield = SoundField()
+        sfield.add({s, r, b})
+        sfield.set_allowed_barriers(s, r, {b})
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 100)
+        sfield.set_directivity_loss(s, r, 3)
+        sfield.update_dBA_predictions()
+        self.assertEqual(r.dBA_predicted, 97)
+
+    def test_16_sfield(self):
+        """Candela RTU-01 to R1 """
+        ob = OctaveBands((88, 89, 85, 85, 83, 78, 74, 68))
+        rtu01 = Source(Point(411.14, 250.11, 501.5), 87, 0, ob, q_tested=1, q_installed=2)
+        r1 = Receiver(Point(488.64, 40.76, 465))
+        w_bar15 = Barrier(Segment((443.43, 53.67, 498.5), (439.2, 262.36, 498.5)))
+        il = InsertionLoss(rtu01, r1, w_bar15)
+        self.assertAlmostEqual(il.pld,1.125, places=3)
+        self.assertAlmostEqual(il.il_ari,7.375, places=0)
+        self.assertAlmostEqual(il.il_fresnel, 14.077, places=3)
+
+        sfield = SoundField()
+        sfield.add({rtu01, r1, w_bar15})
+        sfield.set_allowed_barriers(rtu01, r1, {w_bar15})
+
+        # ari
+        sfield.update_dBA_predictions()
+        self.assertAlmostEqual(r1.dBA_predicted,35.53, places=2)
+
+        # fresnel
+        sfield.set_barrier_method(rtu01, r1, "FRESNEL")
+        sfield.update_dBA_predictions()
+        self.assertAlmostEqual(r1.dBA_predicted,28.457, places=2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -136,31 +136,12 @@ class InsertionLoss:
         ]
 
     def get_pld(self):
-        """TODO remove this legacy section"""
-        # this section is legacy... hope to delete
-        # dist_source2receiver_horizontal = self.h_section.s.distance(self.h_section.r)
-        # dist_source2bar_horizontal = self.h_section.s.distance(self.h_section.intersect)
-        # dist_source2receiver_propogation = self.s_r.length
-        # dist_source2barrier_top = self.s.geo.distance(self.bar_cross_point_3D)
-        # dist_receiver2barrier_top = self.r.geo.distance(self.bar_cross_point_3D)
-        # pld_1 = (
-        #     dist_source2barrier_top
-        #     + dist_receiver2barrier_top
-        #     - dist_source2receiver_propogation
-        # )
-        # end legacy section
-
-        pld_2 = (
+        pld = (
             self.s.geo.distance(self.bar_cross_point_3D)
             + self.r.geo.distance(self.bar_cross_point_3D)
             - self.s.geo.distance(self.r.geo)
         )
-
-        # if pld_1 != pld_2:
-        #     log("pld_1 != pld_2")
-        #     raise Exception("pld_1 != pld_2")
-
-        return pld_2
+        return pld
 
     def get_vertical_intersect(self, s: Source, r: Receiver):
         intersect = self.vert_2D_s_r_segment.intersection(self.vert_2D_bar_ray)
