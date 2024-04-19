@@ -16,6 +16,7 @@ from OctaveBands import OctaveBands
 from sympy.geometry import Point, Segment
 # from acoustics.decibel import dbsum as dbsum_acoustics
 import math
+from itertools import permutations
 
 
 def get_random_source():
@@ -283,6 +284,230 @@ class TestApp(unittest.TestCase):
         self.assertEqual(len(sfield.receivers), 1)
         self.assertEqual(len(sfield.barriers), 1)
 
+    def test_add_remove_srb_to_sfield(self):
+        """ test you can add/remove source/receiver/barriers without error. """
+        sfield = SoundField()
+        s = Source(Point(0, 0, 0), 100, 10)
+        r = Receiver(Point(10, 0, 0))
+        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+
+        sfield.remove({s, r, b})
+
+        sfield.add({s, r, b})
+        sfield.add({s, r, b})
+
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.barriers), 1)
+        self.assertEqual(len(sfield.sound_path_matrix), 1)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+
+        sfield.remove(s)
+        self.assertEqual(len(sfield.sources), 0)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.barriers), 1)
+        self.assertEqual(len(sfield.sound_path_matrix), 0)
+
+        sfield.add(s)
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.barriers), 1)
+        self.assertEqual(len(sfield.sound_path_matrix), 1)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+
+        sfield.remove(r)
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.receivers), 0)
+        self.assertEqual(len(sfield.barriers), 1)
+        self.assertEqual(len(sfield.sound_path_matrix), 1)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 0)
+
+        sfield.add(r)
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.barriers), 1)
+        self.assertEqual(len(sfield.sound_path_matrix), 1)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+
+        sfield.remove(b)
+        self.assertEqual(len(sfield.sources), 1)
+        self.assertEqual(len(sfield.receivers), 1)
+        self.assertEqual(len(sfield.barriers), 0)
+        self.assertEqual(len(sfield.sound_path_matrix), 1)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+
+        sfield.remove({s, r, b})
+        self.assertEqual(len(sfield.sources), 0)
+        self.assertEqual(len(sfield.receivers), 0)
+        self.assertEqual(len(sfield.barriers), 0)
+        self.assertEqual(len(sfield.sound_path_matrix), 0)
+
+    def test_permutations_of_add_remove_srb_to_sfield(self):
+        sfield = SoundField()
+        s = Source(Point(0, 0, 0), 100, 10)
+        r = Receiver(Point(10, 0, 0))
+        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+
+        perms = permutations([s, r, b])
+        # remove in perm order
+        for p in perms:
+            sfield.add({s, r, b})
+            self.assertEqual(len(sfield.sources), 1)
+            self.assertEqual(len(sfield.receivers), 1)
+            self.assertEqual(len(sfield.barriers), 1)
+            self.assertEqual(len(sfield.sound_path_matrix), 1)
+            self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+
+            sfield.remove(p[0])
+            sfield.remove(p[1])
+            sfield.remove(p[2])
+
+            self.assertEqual(len(sfield.sources), 0)
+            self.assertEqual(len(sfield.receivers), 0)
+            self.assertEqual(len(sfield.barriers), 0)
+            self.assertEqual(len(sfield.sound_path_matrix), 0)
+
+        # add in perm order
+        for p in perms:
+            sfield.remove({s, r, b})
+            self.assertEqual(len(sfield.sources), 0)
+            self.assertEqual(len(sfield.receivers), 0)
+            self.assertEqual(len(sfield.barriers), 0)
+            self.assertEqual(len(sfield.sound_path_matrix), 0)
+
+            sfield.add(p[0])
+            sfield.add(p[1])
+            sfield.add(p[2])
+
+            self.assertEqual(len(sfield.sources), 1)
+            self.assertEqual(len(sfield.receivers), 1)
+            self.assertEqual(len(sfield.barriers), 1)
+            self.assertEqual(len(sfield.sound_path_matrix), 1)
+            self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+    def test_barrier_deletion_removes_from_sound_path(self):
+        sfield = SoundField()
+        s = Source(Point(0, 0, 0), 100, 10)
+        r = Receiver(Point(10, 0, 0))
+        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+
+        sfield.add({s, r, b})
+        self.assertEqual(len(sfield.sound_path_matrix[0][0].allowed_barriers), 0)
+
+        sfield.set_allowed_barriers(s, r, {b})
+        self.assertEqual(len(sfield.sound_path_matrix[0][0].allowed_barriers), 1)
+        self.assertTrue(b in sfield.sound_path_matrix[0][0].allowed_barriers)
+        sfield.remove(b)
+        self.assertEqual(len(sfield.sound_path_matrix[0][0].allowed_barriers), 0)
+
+    def test_mult_sr_adds_removes(self):
+        sfield = SoundField()
+        s0 = Source(Point(0, 0, 0), 100, 10)
+        s1 = Source(Point(0, 0, 0), 100, 10)
+        s2 = Source(Point(0, 0, 0), 100, 10)
+        r0 = Receiver(Point(10, 0, 0))
+        r1 = Receiver(Point(10, 0, 0))
+        r2 = Receiver(Point(10, 0, 0))
+        r3 = Receiver(Point(10, 0, 0))
+        b0 = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b1 = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b2 = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        s_set = {s0, s1, s2}
+        r_set = {r0, r1, r2, r3}
+        b_set = {b0, b1, b2}
+        all_set = s_set | r_set | b_set
+
+        def _add_in_order():
+            sfield.add(s0)
+            sfield.add(s1)
+            sfield.add(s2)
+            sfield.add(b0)
+            sfield.add(b1)
+            sfield.add(b2)
+            sfield.add(r0)
+            sfield.add(r1)
+            sfield.add(r2)
+            sfield.add(r3)
+
+        _add_in_order()
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        sfield.add(all_set)
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+
+        sp = sfield.sound_path_matrix[0][1]
+        sfield.remove(r0)
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 3)
+        self.assertEqual(sfield.sound_path_matrix[0][0], sp)
+
+        sfield.add(r0)
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+
+
+        sfield.remove(all_set)
+        _add_in_order()
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        sp0 = sfield.sound_path_matrix[0][0]
+        sp2 = sfield.sound_path_matrix[0][2]
+        sfield.remove(r1)
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 3)
+        self.assertEqual(sfield.sound_path_matrix[0][0], sp0)
+        self.assertEqual(sfield.sound_path_matrix[0][1], sp2)
+
+        sfield.remove(all_set)
+        _add_in_order()
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        sp0 = sfield.sound_path_matrix[0][0]
+        sp1 = sfield.sound_path_matrix[0][1]
+        sfield.remove(r2)
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 3)
+        self.assertEqual(sfield.sound_path_matrix[0][0], sp0)
+        self.assertEqual(sfield.sound_path_matrix[0][1], sp1)
+
+        sfield.remove(all_set)
+        _add_in_order()
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        sp0 = sfield.sound_path_matrix[0][0]
+        sp1 = sfield.sound_path_matrix[2][0]
+        sfield.remove(s1)
+        self.assertEqual(len(sfield.sound_path_matrix), 2)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        self.assertEqual(sfield.sound_path_matrix[0][0], sp0)
+        self.assertEqual(sfield.sound_path_matrix[1][0], sp1)
+
+        sfield.remove(all_set)
+        _add_in_order()
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        sp0 = sfield.sound_path_matrix[0][0]
+        sp1 = sfield.sound_path_matrix[1][0]
+        sfield.remove(s2)
+        self.assertEqual(len(sfield.sound_path_matrix), 2)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        self.assertEqual(sfield.sound_path_matrix[0][0], sp0)
+        self.assertEqual(sfield.sound_path_matrix[1][0], sp1)
+
+        sfield.remove(all_set)
+        _add_in_order()
+        self.assertEqual(len(sfield.sound_path_matrix), 3)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        sp0 = sfield.sound_path_matrix[1][0]
+        sp1 = sfield.sound_path_matrix[2][0]
+        sfield.remove(s0)
+        self.assertEqual(len(sfield.sound_path_matrix), 2)
+        self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
+        self.assertEqual(sfield.sound_path_matrix[0][0], sp0)
+        self.assertEqual(sfield.sound_path_matrix[1][0], sp1)
+
+
+
     def test_simple_dbA_prediction_no_barrier_1(self):
         """Test that the predicted dBA is same as reference distance if same distance away from source"""
         sfield = SoundField()
@@ -339,7 +564,9 @@ class TestApp(unittest.TestCase):
         self.assertEqual(r0.dBA_predicted, 110)
         self.assertAlmostEqual(r1.dBA_predicted, 104, 1)
 
-    #def test_sfield_with_barrier_1(self):
+        sfield.update_dBA_predictions({r1})
+        self.assertAlmostEqual(r1.dBA_predicted, 104, 1)
+
     def test_2_with_sfield(self):
         """Test s_r grazes barrier start and gives proper dBA prediction."""
         s = Source(Point(0, 0, 0), 100, math.sqrt(10**2 + 10**2))
