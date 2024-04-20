@@ -21,13 +21,14 @@ def dbsum(dBs: Sequence[float]) -> float:
 
 
 class HorizontalSection:
+    """ As if looking down on the srb system """
     def __init__(self, source: Point, receiver: Point, barrier: Segment):
-        self.s = Point(source.x, source.y, 0)
-        self.r = Point(receiver.x, receiver.y, 0)
-        self.s_r = Segment(self.s, self.r)
+        self.s      = Point(source.x, source.y, 0)
+        self.r      = Point(receiver.x, receiver.y, 0)
+        self.s_r    = Segment(self.s, self.r)
         self.bar_p1 = Point(barrier.p1.x, barrier.p1.y, 0)
         self.bar_p2 = Point(barrier.p2.x, barrier.p2.y, 0)
-        self.bar = Segment(self.bar_p1, self.bar_p2)
+        self.bar    = Segment(self.bar_p1, self.bar_p2)
         try:
             self.intersect = self.s_r.intersection(self.bar)[0]
         except IndexError:
@@ -36,22 +37,19 @@ class HorizontalSection:
 
 
 class VerticalSection:
+    """ As if looking at the srb system from the side """
     def __init__(
         self,
-        source: Point,
-        receiver: Point,
-        bar_cross_point_3D: Point,
-        h_sect: HorizontalSection,
+        source:             Point,
+        receiver:           Point,
+        bar_cross_point_3d: Point,
+        h_sect:             HorizontalSection,
     ):
-        self.s = Point(0, source.z, 0)
-        self.r = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
-        self.s_r = Segment(self.s, self.r)
-        self.bar_cross_point = Point(
-            h_sect.s.distance(h_sect.intersect),
-            bar_cross_point_3D.z,
-            0,
-        )
-        self.bar = Ray(self.bar_cross_point, self.bar_cross_point + Point(0, -1, 0))
+        self.s                  = Point(0, source.z, 0)
+        self.r                  = Point(h_sect.s.distance(h_sect.r), receiver.z, 0)
+        self.s_r                = Segment(self.s, self.r)
+        self.bar_cross_point    = Point(h_sect.s.distance(h_sect.intersect), bar_cross_point_3d.z, 0)
+        self.bar                = Ray(self.bar_cross_point, self.bar_cross_point + Point(0, -1, 0))
 
         try:
             self.intersect = self.s_r.intersection(self.bar)[0]
@@ -67,19 +65,19 @@ VERTICAL_ERR = "v_section.intersect is None"
 
 
 class InsertionLoss:
-    def __init__(self, source: Source, receiver: Receiver, barrier: Barrier):
-        self.s = source
-        self.r = receiver
-        self.b = barrier
+    def __init__(self, s: Source, r: Receiver, b: Barrier):
+        self.s = s
+        self.r = r
+        self.b = b
         self.s_r = Segment(self.s.geo, self.r.geo)
 
         # init to 0, None
-        self.h_section = None
+        self.h_section          = None
         self.bar_cross_point_3D = None
-        self.v_section = None
-        self.pld = 0
-        self.il_ari = 0
-        self.il_fresnel = 0
+        self.v_section          = None
+        self.pld                = 0
+        self.il_ari             = 0
+        self.il_fresnel         = 0
 
         self.error = None
         # update if we can
@@ -100,9 +98,7 @@ class InsertionLoss:
             log(self.error)
             return
 
-        self.v_section = VerticalSection(
-            self.s.geo, self.r.geo, self.bar_cross_point_3D, self.h_section
-        )
+        self.v_section = VerticalSection( self.s.geo, self.r.geo, self.bar_cross_point_3D, self.h_section )
         # TODO I don't think this is possible... vert check happens above.
         if self.v_section.intersect is None:
             self.error = VERTICAL_ERR
@@ -113,27 +109,27 @@ class InsertionLoss:
         self.il_ari = self.get_ARI_il()
         self.il_fresnel = self.get_fresnel_il()
 
-    def get_attr_for_graph(self):
-        dist_source2receiver_horizontal = self.horiz_2D_s.distance(self.horiz_2D_r)
-        dist_source2bar_horizontal = self.horiz_2D_s.distance(self.horiz_2D_intersect)
-        dist_source2receiver_propogation = self.s_r.length
-        dist_source2barrier_top = self.s.distance(self.bar_cross_point_3D)
-        dist_receiver2barrier_top = self.r.distance(self.bar_cross_point_3D)
-        pld = (
-            dist_source2barrier_top
-            + dist_receiver2barrier_top
-            - dist_source2receiver_propogation
-        )
-
-        return [
-            round(self.bar_cross_point_3D.z, 2),
-            round(dist_source2receiver_horizontal, 2),
-            round(dist_source2bar_horizontal, 2),
-            round(dist_source2barrier_top, 2),
-            round(dist_receiver2barrier_top, 2),
-            round(dist_source2receiver_propogation, 2),
-            round(pld, 2),
-        ]
+    # def get_attr_for_graph(self):
+        # dist_source2receiver_horizontal = self.horiz_2D_s.distance(self.horiz_2D_r)
+        # dist_source2bar_horizontal = self.horiz_2D_s.distance(self.horiz_2D_intersect)
+        # dist_source2receiver_propagation = self.s_r.length
+        # dist_source2barrier_top = self.s.distance(self.bar_cross_point_3D)
+        # dist_receiver2barrier_top = self.r.distance(self.bar_cross_point_3D)
+        # pld = (
+        #     dist_source2barrier_top
+        #     + dist_receiver2barrier_top
+        #     - dist_source2receiver_propagation
+        # )
+        #
+        # return [
+        #     round(self.bar_cross_point_3D.z, 2),
+        #     round(dist_source2receiver_horizontal, 2),
+        #     round(dist_source2bar_horizontal, 2),
+        #     round(dist_source2barrier_top, 2),
+        #     round(dist_receiver2barrier_top, 2),
+        #     round(dist_source2receiver_propagation, 2),
+        #     round(pld, 2),
+        # ]
 
     def get_pld(self):
         pld = (
@@ -143,14 +139,14 @@ class InsertionLoss:
         )
         return pld
 
-    def get_vertical_intersect(self, s: Source, r: Receiver):
-        intersect = self.vert_2D_s_r_segment.intersection(self.vert_2D_bar_ray)
-
-        if intersect == []:
-            log("barrier fails VERTICAL test")
-            return None
-        else:
-            return intersect[0]
+    # def get_vertical_intersect(self, s: Source, r: Receiver):
+    #     intersect = self.vert_2D_s_r_segment.intersection(self.vert_2D_bar_ray)
+    #
+    #     if intersect == []:
+    #         log("barrier fails VERTICAL test")
+    #         return None
+    #     else:
+    #         return intersect[0]
 
     def bar_s_r_grazing(self) -> bool:
         """returns True if either the start or end point of the source-receiver line lie on the barrier line, or vice versa"""
@@ -218,9 +214,9 @@ class InsertionLoss:
     def get_fresnel_il(self) -> float:
         a_weights = [-26.2, -16.1, -8.6, -3.2, -0, 1.2, 1, -1.1]
         eqmt_lvl = self.s.dBA
-        if self.s.octave_band_levels is None:
+        if self.s.ob_lvls is None:
             return 0
-        ob_levels = list(self.s.octave_band_levels.get_OB_sound_levels())
+        ob_levels = list(self.s.ob_lvls.get_OB_sound_levels())
         speed_of_sound = 1128
         fresnel_num_list = InsertionLoss.get_fresnel_numbers(self.pld, speed_of_sound)
         ob_bar_il = InsertionLoss.get_ob_bar_attenuation(fresnel_num_list)
