@@ -788,6 +788,52 @@ class TestApp(unittest.TestCase):
         sfield.update_dBA_predictions()
         self.assertAlmostEqual(r1.dBA_predicted,28.457, places=2)
 
+    def test_ten_units_nine_ignored(self):
+        sources = []
+        for s in range(10):
+            sources.append(Source(Point(0, 0, 0), 100, 10))
+        r0 = Receiver(Point(10, 0, 0))
+        r1 = Receiver(Point(10, 0, 0))
+
+        sf = SoundField()
+        for s in sources:
+            sf.add(s)
+        sf.add({r0, r1})
+
+        for i in range(9):
+            sp = sf.get_sr_soundpath(sources[i], r1)
+            sp.ignore = True
+
+        sf.update_dBA_predictions({r0, r1})
+        self.assertEqual(r0.dBA_predicted, 110)
+        self.assertEqual(r1.dBA_predicted, 100)
+
+    def test_q(self):
+        s = Source(Point(0, 0, 0), 100, 10, q_installed=4)
+        r = Receiver(Point(10, 0, 0))
+
+        sf = SoundField()
+        sf.add({s, r})
+        sf.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 103, places=1)
+
+        s.q_installed = 8
+        sf.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 106, places=1)
+
+        s.q_installed = 2
+        sf.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 100, places=1)
+
+        s.q_installed = 1
+        sf.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 97, places=1)
+
+        s.q_tested = 8
+        s.q_installed = 2
+        sf.update_dBA_predictions()
+        self.assertAlmostEqual(r.dBA_predicted, 94, places=1)
+
 
 if __name__ == "__main__":
     unittest.main()
