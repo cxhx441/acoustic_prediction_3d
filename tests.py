@@ -82,6 +82,7 @@ class TestSource(unittest.TestCase):
         """Test you can create a source"""
         ob = OctaveBands.get_rand_ob()
         s = Source(Point(0, 0, 0), 100, 3)
+        self.assertIsInstance(s, Source)
         s = Source(Point(0, 0, 0), 100, 3, ob)
         self.assertIsInstance(s, Source)
 
@@ -98,6 +99,7 @@ class TestReceiver(unittest.TestCase):
         """Test you can create a receiver"""
         r = Receiver(Point(0, 0, 0))
         self.assertIsInstance(r, Receiver)
+
 
 class TestBarrier(unittest.TestCase):
     def test_create_barrier(self):
@@ -227,7 +229,7 @@ class TestInsertionLoss(unittest.TestCase):
         self.assertEqual(il.error, HORIZONTAL_ERR)
 
     def test_16(self):
-        """Mukilteo sheet For Pres-grnd"""
+        """Mukilteo sheet For Pres-ground"""
         ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
         s = Source(Point(0, 0, 9), 71, 30, ob)
         r = Receiver(Point(0, 68, 20))
@@ -382,6 +384,7 @@ class TestApp(unittest.TestCase):
             self.assertEqual(len(sfield.barriers), 1)
             self.assertEqual(len(sfield.sound_path_matrix), 1)
             self.assertEqual(len(sfield.sound_path_matrix[0]), 1)
+
     def test_barrier_deletion_removes_from_sound_path(self):
         sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
@@ -397,7 +400,7 @@ class TestApp(unittest.TestCase):
         sfield.remove(b)
         self.assertEqual(len(sfield.sound_path_matrix[0][0].allowed_barriers), 0)
 
-    def test_mult_sr_adds_removes(self):
+    def test_multiple_sr_adds_removes(self):
         sfield = SoundField()
         s0 = Source(Point(0, 0, 0), 100, 10)
         s1 = Source(Point(0, 0, 0), 100, 10)
@@ -503,7 +506,6 @@ class TestApp(unittest.TestCase):
         self.assertEqual(len(sfield.sound_path_matrix[0]), 4)
         self.assertEqual(sfield.sound_path_matrix[0][0], sp0)
         self.assertEqual(sfield.sound_path_matrix[1][0], sp1)
-
 
 
     def test_simple_dbA_prediction_no_barrier_1(self):
@@ -661,7 +663,6 @@ class TestApp(unittest.TestCase):
         sfield.update_dBA_predictions()
         self.assertEqual(r.dBA_predicted, 97)
 
-
     def test_8_with_sfield(self):
         """Test miss in just vertical section"""
         s = Source(Point(5, 0, 5), 100, math.sqrt(10**2 + 10**2))
@@ -680,7 +681,6 @@ class TestApp(unittest.TestCase):
         sfield.set_directivity_loss(s, r, 3)
         sfield.update_dBA_predictions()
         self.assertEqual(r.dBA_predicted, 97)
-
 
     def test_9_with_sfield(self):
         """Test miss in vertical & horizontal section"""
@@ -741,7 +741,6 @@ class TestApp(unittest.TestCase):
         sfield.update_dBA_predictions()
         self.assertEqual(r.dBA_predicted, 87)
 
-
     def test_15_sfield(self):
         """Test parallel s_r and bar give no IL"""
         s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 10**2 + 10**2))
@@ -769,9 +768,9 @@ class TestApp(unittest.TestCase):
         r1 = Receiver(Point(488.64, 40.76, 465))
         w_bar15 = Barrier(Segment(Point(443.43, 53.67, 498.5), Point(439.2, 262.36, 498.5)))
         il = InsertionLoss(rtu01, r1, w_bar15)
-        self.assertAlmostEqual(il.pld,1.125, places=3)
-        self.assertAlmostEqual(il.il_ari,7.375, places=0)
-        self.assertAlmostEqual(il.il_fresnel, 14.077, places=3)
+        self.assertAlmostEqual(il.pld, 1.125, places=3)
+        self.assertAlmostEqual(il.il_ari, 7.375, places=0)
+        self.assertAlmostEqual(il.il_fresnel,  14.077, places=3)
 
         sfield = SoundField()
         sfield.add({rtu01, r1, w_bar15})
@@ -779,12 +778,12 @@ class TestApp(unittest.TestCase):
 
         # ari
         sfield.update_dBA_predictions()
-        self.assertAlmostEqual(r1.dBA_predicted,35.53, places=2)
+        self.assertAlmostEqual(r1.dBA_predicted, 35.53, places=2)
 
         # fresnel
         sfield.set_barrier_method(rtu01, r1, "FRESNEL")
         sfield.update_dBA_predictions()
-        self.assertAlmostEqual(r1.dBA_predicted,28.457, places=2)
+        self.assertAlmostEqual(r1.dBA_predicted, 28.457, places=2)
 
     def test_ten_units_nine_ignored(self):
         sources = []
