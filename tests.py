@@ -1,4 +1,3 @@
-import random
 import unittest
 from InsertionLoss import (
     InsertionLoss,
@@ -14,7 +13,6 @@ from Receiver import Receiver
 from Barrier import Barrier
 from OctaveBands import OctaveBands
 from sympy.geometry import Point, Segment
-# from acoustics.decibel import dbsum as dbsum_acoustics
 import math
 from itertools import permutations
 
@@ -104,7 +102,7 @@ class TestReceiver(unittest.TestCase):
 class TestBarrier(unittest.TestCase):
     def test_create_barrier(self):
         """Test you can create a barrier"""
-        b = Barrier(Segment((0, 0, 0), (1, 1, 1)))
+        b = Barrier(Segment(Point(0, 0, 0), Point(1, 1, 1)))
         self.assertIsInstance(b, Barrier)
 
 
@@ -117,7 +115,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(0, 0, 0)
         r = Receiver(Point(10, 10, 0))
-        b = Barrier(Segment((5, 5, 0), (5, 0, 0)))
+        b = Barrier(Segment(Point(5, 5, 0), Point(5, 0, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -128,7 +126,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(0, 0, 0)
         r = Receiver(Point(10, 10, 0))
-        b = Barrier(Segment((5, 0, 0), (5, 5, 0)))
+        b = Barrier(Segment(Point(5, 0, 0), Point(5, 5, 0)))
 
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
@@ -140,7 +138,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 5, 0)
         r = Receiver(Point(5, 0, 0))
-        b = Barrier(Segment((0, 0, 0), (10, 10, 0)))
+        b = Barrier(Segment(Point(0, 0, 0), Point(10, 10, 0)))
 
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
@@ -152,7 +150,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 0, 0)
         r = Receiver(Point(5, 5, 0))
-        b = Barrier(Segment((0, 0, 0), (10, 10, 0)))
+        b = Barrier(Segment(Point(0, 0, 0), Point(10, 10, 0)))
 
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
@@ -164,7 +162,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 0, 5)
         r = Receiver(Point(20, 10, 5))
-        b = Barrier(Segment((0, 5, 6), (10, 5, 6)))
+        b = Barrier(Segment(Point(0, 5, 6), Point(10, 5, 6)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -175,7 +173,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 0, 5)
         r = Receiver(Point(5, 10, 15))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -186,7 +184,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 0, 5)
         r = Receiver(Point(20, 10, 15))
-        b = Barrier(Segment((0, 5, 6), (10, 5, 6)))
+        b = Barrier(Segment(Point(0, 5, 6), Point(10, 5, 6)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -197,7 +195,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 0, 0)
         r = Receiver(Point(5, 10, 10))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.pld, 0)
         self.assertEqual(il.il_ari, 0)
@@ -209,7 +207,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = Source(Point(5, 0, 0), 100, 3)
         s.ob_lvls = None
         r = Receiver(Point(5, 8, 0))
-        b = Barrier(Segment((0, 4, 3), (8, 4, 3)))
+        b = Barrier(Segment(Point(0, 4, 3), Point(8, 4, 3)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.pld, 2)
         self.assertEqual(il.il_ari, 10)
@@ -221,7 +219,7 @@ class TestInsertionLoss(unittest.TestCase):
         s = get_random_source()
         s.geo = Point(5, 0, 0)
         r = Receiver(Point(5, 10, 10))
-        b = Barrier(Segment((6, 10, 10), (6, 0, 0)))
+        b = Barrier(Segment(Point(6, 10, 10), Point(6, 0, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.pld, 0)
         self.assertEqual(il.il_ari, 0)
@@ -233,7 +231,7 @@ class TestInsertionLoss(unittest.TestCase):
         ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
         s = Source(Point(0, 0, 9), 71, 30, ob)
         r = Receiver(Point(0, 68, 20))
-        b = Barrier(Segment((-10, 13, 19), (10, 13, 19)))
+        b = Barrier(Segment(Point(-10, 13, 19), Point(10, 13, 19)))
         il = InsertionLoss(s, r, b)
         self.assertAlmostEqual(il.pld, 2.5263, places=4)
         self.assertEqual(il.il_ari, 11)
@@ -244,7 +242,7 @@ class TestInsertionLoss(unittest.TestCase):
         ob = OctaveBands((69, 67, 68, 70, 65, 62, 57, 54))
         s = Source(Point(0, 0, 22), 71, 30, ob)
         r = Receiver(Point(0, 184.61, 22))
-        b = Barrier(Segment((-10, 6, 25.25), (10, 6, 25.25)))
+        b = Barrier(Segment(Point(-10, 6, 25.25), Point(10, 6, 25.25)))
         il = InsertionLoss(s, r, b)
         self.assertAlmostEqual(il.pld, 0.8532, places=4)
         self.assertEqual(il.il_ari, 6)
@@ -267,7 +265,7 @@ class TestApp(unittest.TestCase):
         sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(10, 0, 0))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
 
         sfield.add(s)
         self.assertEqual(len(sfield.sources), 1)
@@ -289,7 +287,7 @@ class TestApp(unittest.TestCase):
         sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(10, 0, 0))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
 
         sfield.remove({s, r, b})
 
@@ -346,7 +344,7 @@ class TestApp(unittest.TestCase):
         sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(10, 0, 0))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
 
         perms = permutations([s, r, b])
         # remove in perm order
@@ -388,7 +386,7 @@ class TestApp(unittest.TestCase):
         sfield = SoundField()
         s = Source(Point(0, 0, 0), 100, 10)
         r = Receiver(Point(10, 0, 0))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
 
         sfield.add({s, r, b})
         self.assertEqual(len(sfield.sound_path_matrix[0][0].allowed_barriers), 0)
@@ -408,9 +406,9 @@ class TestApp(unittest.TestCase):
         r1 = Receiver(Point(10, 0, 0))
         r2 = Receiver(Point(10, 0, 0))
         r3 = Receiver(Point(10, 0, 0))
-        b0 = Barrier(Segment((0, 5, 5), (10, 5, 5)))
-        b1 = Barrier(Segment((0, 5, 5), (10, 5, 5)))
-        b2 = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b0 = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
+        b1 = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
+        b2 = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
         s_set = {s0, s1, s2}
         r_set = {r0, r1, r2, r3}
         b_set = {b0, b1, b2}
@@ -571,7 +569,7 @@ class TestApp(unittest.TestCase):
         """Test s_r grazes barrier start and gives proper dBA prediction."""
         s = Source(Point(0, 0, 0), 100, math.sqrt(10**2 + 10**2))
         r = Receiver(Point(10, 10, 0))
-        b = Barrier(Segment((5, 5, 0), (5, 0, 0)))
+        b = Barrier(Segment(Point(5, 5, 0), Point(5, 0, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -591,7 +589,7 @@ class TestApp(unittest.TestCase):
         """Test s_r grazes barrier end and gives proper dBA prediction."""
         s = Source(Point(0, 0, 0), 100, math.sqrt(10**2 + 10**2))
         r = Receiver(Point(10, 10, 0))
-        b = Barrier(Segment((5, 0, 0), (5, 5, 0)))
+        b = Barrier(Segment(Point(5, 0, 0), Point(5, 5, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -610,7 +608,7 @@ class TestApp(unittest.TestCase):
         """Test barrier grazes s"""
         s = Source(Point(5, 5, 0), 100, 5)
         r = Receiver(Point(5, 0, 0))
-        b = Barrier(Segment((0, 0, 0), (10, 10, 0)))
+        b = Barrier(Segment(Point(0, 0, 0), Point(10, 10, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -629,7 +627,7 @@ class TestApp(unittest.TestCase):
         """Test barrier grazes r"""
         s = Source(Point(5, 0, 0), 100, 5)
         r = Receiver(Point(5, 5, 0))
-        b = Barrier(Segment((0, 0, 0), (10, 10, 0)))
+        b = Barrier(Segment(Point(0, 0, 0), Point(10, 10, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -648,7 +646,7 @@ class TestApp(unittest.TestCase):
         """Test miss in just horizontal section"""
         s = Source(Point(5, 0, 5), 100, math.sqrt(15**2 + 10**2))
         r = Receiver(Point(20, 10, 5))
-        b = Barrier(Segment((0, 5, 6), (10, 5, 6)))
+        b = Barrier(Segment(Point(0, 5, 6), Point(10, 5, 6)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -668,7 +666,7 @@ class TestApp(unittest.TestCase):
         """Test miss in just vertical section"""
         s = Source(Point(5, 0, 5), 100, math.sqrt(10**2 + 10**2))
         r = Receiver(Point(5, 10, 15))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -688,7 +686,7 @@ class TestApp(unittest.TestCase):
         """Test miss in vertical & horizontal section"""
         s = Source(Point(5, 0, 5), 100, math.sqrt(15**2 + 10**2 + 10**2))
         r = Receiver(Point(20, 10, 15))
-        b = Barrier(Segment((0, 5, 6), (10, 5, 6)))
+        b = Barrier(Segment(Point(0, 5, 6), Point(10, 5, 6)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.il_ari, 0)
         self.assertEqual(il.il_fresnel, 0)
@@ -707,7 +705,7 @@ class TestApp(unittest.TestCase):
         """Test pld == 0"""
         s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 10**2 + 10**2))
         r = Receiver(Point(5, 10, 10))
-        b = Barrier(Segment((0, 5, 5), (10, 5, 5)))
+        b = Barrier(Segment(Point(0, 5, 5), Point(10, 5, 5)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.pld, 0)
         self.assertEqual(il.il_ari, 0)
@@ -727,7 +725,7 @@ class TestApp(unittest.TestCase):
         s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 8**2 + 0**2))
         s.ob_lvls = None
         r = Receiver(Point(5, 8, 0))
-        b = Barrier(Segment((0, 4, 3), (8, 4, 3)))
+        b = Barrier(Segment(Point(0, 4, 3), Point(8, 4, 3)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.pld, 2)
         self.assertEqual(il.il_ari, 10)
@@ -748,7 +746,7 @@ class TestApp(unittest.TestCase):
         """Test parallel s_r and bar give no IL"""
         s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 10**2 + 10**2))
         r = Receiver(Point(5, 10, 10))
-        b = Barrier(Segment((6, 10, 10), (6, 0, 0)))
+        b = Barrier(Segment(Point(6, 10, 10), Point(6, 0, 0)))
         il = InsertionLoss(s, r, b)
         self.assertEqual(il.pld, 0)
         self.assertEqual(il.il_ari, 0)
@@ -769,7 +767,7 @@ class TestApp(unittest.TestCase):
         ob = OctaveBands((88, 89, 85, 85, 83, 78, 74, 68))
         rtu01 = Source(Point(411.14, 250.11, 501.5), 87, 0, ob, q_tested=1, q_installed=2)
         r1 = Receiver(Point(488.64, 40.76, 465))
-        w_bar15 = Barrier(Segment((443.43, 53.67, 498.5), (439.2, 262.36, 498.5)))
+        w_bar15 = Barrier(Segment(Point(443.43, 53.67, 498.5), Point(439.2, 262.36, 498.5)))
         il = InsertionLoss(rtu01, r1, w_bar15)
         self.assertAlmostEqual(il.pld,1.125, places=3)
         self.assertAlmostEqual(il.il_ari,7.375, places=0)
