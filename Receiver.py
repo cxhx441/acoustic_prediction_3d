@@ -1,7 +1,7 @@
 from sympy import Point
 
 
-class Receiver():
+class Receiver:
     def __init__(self,
                  geo: Point,
                  name:              str     = None,

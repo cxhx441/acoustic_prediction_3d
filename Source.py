@@ -66,6 +66,7 @@ class Source:
 
     def get_dBA_at_distance_ft(self, distance_ft: float):
         return self.dBA - self.get_distance_loss(distance_ft) + self.get_q_effect()
+
     def get_distance_loss(self, distance_ft: float):
         if self.ref_dist_ft == 0:
             q = self.q_tested
@@ -78,4 +79,3 @@ class Source:
     def get_q_effect(self):
         q_effect = 10*log10(self.q_installed / self.q_tested)
         return q_effect
-
