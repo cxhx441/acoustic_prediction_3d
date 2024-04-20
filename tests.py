@@ -207,7 +207,7 @@ class TestInsertionLoss(unittest.TestCase):
     def test_13(self):
         """Test no octave band levels gives no fresnel IL"""
         s = Source(Point(5, 0, 0), 100, 3)
-        s.octave_band_levels = None
+        s.ob_lvls = None
         r = Receiver(Point(5, 8, 0))
         b = Barrier(Segment((0, 4, 3), (8, 4, 3)))
         il = InsertionLoss(s, r, b)
@@ -725,7 +725,7 @@ class TestApp(unittest.TestCase):
     def test_13_with_sfield(self):
         """Test no octave band levels gives no fresnel IL"""
         s = Source(Point(5, 0, 0), 100, math.sqrt(0**2 + 8**2 + 0**2))
-        s.octave_band_levels = None
+        s.ob_lvls = None
         r = Receiver(Point(5, 8, 0))
         b = Barrier(Segment((0, 4, 3), (8, 4, 3)))
         il = InsertionLoss(s, r, b)
