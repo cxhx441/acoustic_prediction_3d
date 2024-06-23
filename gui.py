@@ -1,26 +1,26 @@
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QVBoxLayout, QWidget
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QTextEdit
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.label = QLabel("Click in this window")
+        self.setCentralWidget(self.label)
 
-        self.setWindowTitle("My App")
+    def mouseMoveEvent(self, e):
+        self.label.setText("mouseMoveEvent")
 
-        self.label = QLabel()
+    def mousePressEvent(self, e):
+        self.label.setText("mousePressEvent")
 
-        self.input = QLineEdit()
-        self.input.textChanged.connect(self.label.setText)
+    def mouseReleaseEvent(self, e):
+        self.label.setText("mouseReleaseEvent")
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.input)
-        layout.addWidget(self.label)
+    def mouseDoubleClickEvent(self, e):
+        self.label.setText("mouseDoubleClickEvent")
 
-        container = QWidget()
-        container.setLayout(layout)
-
-        # Set the central widget of the Window.
-        self.setCentralWidget(container)
 
 # You need one (and only one) QApplication instance per application.
 app = QApplication([])
