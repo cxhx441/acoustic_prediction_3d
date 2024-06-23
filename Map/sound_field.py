@@ -1,12 +1,14 @@
-from Source import Source
-from Receiver import Receiver
-from Barrier import Barrier
-from InsertionLoss import InsertionLoss
+from .source import Source
+from .receiver import Receiver
+from .barrier import Barrier
+from .insertion_loss import InsertionLoss
 from math import log10, pi
 from ordered_set import OrderedSet
 import sympy
 
 ALLOWED_BARRIER_METHODS = ('ARI', 'FRESNEL')
+
+
 class SoundPath:
     def __init__(self,
                  directivity_loss:  float   = 0,
@@ -23,6 +25,7 @@ class SoundPath:
             self.allowed_barriers = set()
         if self.barrier_method not in ALLOWED_BARRIER_METHODS:
             raise ValueError(f'Barrier method must be one of {ALLOWED_BARRIER_METHODS}')
+
 
 class SoundField:
     def __init__(self):

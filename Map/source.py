@@ -1,5 +1,5 @@
 from sympy import Point
-from OctaveBands import OctaveBands
+from .octave_bands import OctaveBands
 from math import log10, pi
 
 

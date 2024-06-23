@@ -1,8 +1,8 @@
 from __future__ import annotations
 from sympy import Point, Line, Segment, Ray
-from Source import Source
-from Receiver import Receiver
-from Barrier import Barrier
+from .source import Source
+from .receiver import Receiver
+from .barrier import Barrier
 import operator
 import math
 from typing import Sequence

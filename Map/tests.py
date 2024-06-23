@@ -1,5 +1,5 @@
 import unittest
-from InsertionLoss import (
+from .insertion_loss import (
     InsertionLoss,
     HORIZONTAL_ERR,
     # VERTICAL_ERR,
@@ -7,11 +7,11 @@ from InsertionLoss import (
     GRAZING_ERR,
     dbsum,
 )
-from SoundField import SoundField
-from Source import Source
-from Receiver import Receiver
-from Barrier import Barrier
-from OctaveBands import OctaveBands
+from .sound_field import SoundField
+from .source import Source
+from .receiver import Receiver
+from .barrier import Barrier
+from .octave_bands import OctaveBands
 from sympy.geometry import Point, Segment
 import math
 from itertools import permutations
