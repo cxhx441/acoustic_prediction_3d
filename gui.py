@@ -7,13 +7,14 @@ import sys
 
 class AnotherWindow(QWidget):
     """
-    This "window" is a QWidget. If it has no parent, it
-    will appear as a free-floating window as we want.
+    This "window" is a QWidget. If it has no parent,
+    it will appear as a free-floating window.
     """
+
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
-        self.label = QLabel("Another Window % d" % randint(0,100))
+        self.label = QLabel("Another Window % d" % randint(0, 100))
         layout.addWidget(self.label)
         self.setLayout(layout)
 
@@ -21,18 +22,35 @@ class AnotherWindow(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.w = AnotherWindow()
-        self.button = QPushButton("Push for Window")
-        self.button.clicked.connect(self.toggle_window)
-        self.setCentralWidget(self.button)
+        self.window1 = AnotherWindow()
+        self.window2 = AnotherWindow()
 
-    def toggle_window(self, checked):
-        if self.w.isVisible():
-            self.w.hide()
+        l = QVBoxLayout()
+        button1 = QPushButton("Push for Window 1")
+        button1.clicked.connect(self.toggle_window1)
+        l.addWidget(button1)
+
+        button2 = QPushButton("Push for Window 2")
+        button2.clicked.connect(self.toggle_window2)
+        l.addWidget(button2)
+
+        w = QWidget()
+        w.setLayout(l)
+        self.setCentralWidget(w)
+
+    def toggle_window1(self, checked):
+        if self.window1.isVisible():
+            self.window1.hide()
 
         else:
-            self.w.show()
+            self.window1.show()
 
+    def toggle_window2(self, checked):
+        if self.window2.isVisible():
+            self.window2.hide()
+
+        else:
+            self.window2.show()
 app = QApplication([])
 w = MainWindow()
 w.show()
