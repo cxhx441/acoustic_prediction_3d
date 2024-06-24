@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QAction, QIcon
+from PyQt6.QtGui import QAction, QIcon, QKeySequence
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 )
 
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -17,18 +18,27 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("My App")
 
         label = QLabel("Hello!")
+
+        # The `Qt` namespace has a lot of attributes to customize
+        # widgets. See: http://doc.qt.io/qt-5/qt.html
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        # Set the central widget of the Window. Widget will expand
+        # to take up all the space in the window by default.
         self.setCentralWidget(label)
 
         toolbar = QToolBar("My main toolbar")
         toolbar.setIconSize(QSize(16, 16))
         self.addToolBar(toolbar)
 
-        button_action = QAction(QIcon("wafer.png"), "&Your button", self)
+        button_action = QAction(QIcon("wafer.png"), "&Your button", self)  # & is which key to navigate (like TAP)
         button_action.setStatusTip("This is your button")
         button_action.triggered.connect(self.onMyToolBarButtonClick)
         button_action.setCheckable(True)
+        # You can enter keyboard shortcuts using key names (e.g. Ctrl+p)
+        # Qt.namespace identifiers (e.g. Qt.CTRL + Qt.Key_P)
+        # or system agnostic identifiers (e.g. QKeySequence.StandardKey.Print)
+        button_action.setShortcut(QKeySequence("Ctrl+p"))
         toolbar.addAction(button_action)
 
         toolbar.addSeparator()
@@ -42,20 +52,22 @@ class MainWindow(QMainWindow):
         toolbar.addWidget(QLabel("Hello"))
         toolbar.addWidget(QCheckBox())
 
-        self.setStatusBar(QStatusBar(self))
+        self.setStatusBar(QStatusBar(self))  # bit at the bottom
 
-        menu = self.menuBar()
+        menu = self.menuBar()  # file, edit, etc
 
+        # can add QActions so buttons and icons and hotkeys all link to same thing easily
         file_menu = menu.addMenu("&File")
         file_menu.addAction(button_action)
+
         file_menu.addSeparator()
 
-        file_submenu = file_menu.addMenu("&Submenu")
+        file_submenu = file_menu.addMenu("Submenu")
+
         file_submenu.addAction(button_action2)
 
     def onMyToolBarButtonClick(self, s):
         print("click", s)
-
 app = QApplication([])
 w = MainWindow()
 w.show()
