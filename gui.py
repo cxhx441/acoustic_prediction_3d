@@ -1,50 +1,36 @@
-from PyQt6.QtGui import QPalette, QColor
-
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QApplication,
-    QHBoxLayout,
-    QLabel,
-    QMainWindow,
-    QPushButton,
-    QStackedLayout,
-    QVBoxLayout,
-    QWidget, QTabWidget,
+    QMainWindow, QApplication,
+    QLabel, QToolBar, QStatusBar
 )
-
-
-class Color(QWidget):
-
-    def __init__(self, color):
-        super(Color, self).__init__()
-        self.setAutoFillBackground(True)
-
-        palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor(color))
-        self.setPalette(palette)
-
-
+from PyQt6.QtGui import QAction, QIcon
+from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):
+
     def __init__(self):
-        super().__init__()
+        super(MainWindow, self).__init__()
 
-        self.setWindowTitle("My App")
+        self.setWindowTitle("My Awesome App")
 
-        tabs = QTabWidget()
-        tabs.setDocumentMode(True) # Only macOS affected
-        tabs.setTabPosition(QTabWidget.TabPosition.South)
-        tabs.setMovable(True)
+        label = QLabel("Hello!")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        for n, color in enumerate(["red", "green", "blue", "yellow"]):
-            tabs.addTab(Color(color), color)
+        self.setCentralWidget(label)
 
-        self.setCentralWidget(tabs)
+        toolbar = QToolBar("My main toolbar")
+        self.addToolBar(toolbar)
 
+        button_action = QAction("Your button", self)
+        button_action.setStatusTip("This is your button")
+        button_action.triggered.connect(self.onMyToolBarButtonClick)
+        toolbar.addAction(button_action)
+
+        self.setStatusBar(QStatusBar(self))
+
+    def onMyToolBarButtonClick(self, s):
+        print("click", s)
 
 app = QApplication([])
-
-window = MainWindow()
-window.show()
-
+w = MainWindow()
+w.show()
 app.exec()
