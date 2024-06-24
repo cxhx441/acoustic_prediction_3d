@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import (
     QLabel, QToolBar, QStatusBar
 )
 from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
+
 
 class MainWindow(QMainWindow):
 
@@ -18,14 +19,17 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(label)
 
         toolbar = QToolBar("My main toolbar")
+        toolbar.setIconSize(QSize(16,16))
         self.addToolBar(toolbar)
 
-        button_action = QAction("Your button", self)
+        button_action = QAction(QIcon("wafer.png"), "Your button", self)
         button_action.setStatusTip("This is your button")
         button_action.triggered.connect(self.onMyToolBarButtonClick)
+        button_action.setCheckable(True)
         toolbar.addAction(button_action)
 
         self.setStatusBar(QStatusBar(self))
+
 
     def onMyToolBarButtonClick(self, s):
         print("click", s)
