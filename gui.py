@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QStackedLayout,
     QVBoxLayout,
-    QWidget,
+    QWidget, QTabWidget,
 )
 
 
@@ -31,40 +31,15 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("My App")
 
-        pagelayout = QVBoxLayout()
-        button_layout = QHBoxLayout()
-        self.stacklayout = QStackedLayout()
+        tabs = QTabWidget()
+        tabs.setDocumentMode(True) # Only macOS affected
+        tabs.setTabPosition(QTabWidget.TabPosition.South)
+        tabs.setMovable(True)
 
-        pagelayout.addLayout(button_layout)
-        pagelayout.addLayout(self.stacklayout)
+        for n, color in enumerate(["red", "green", "blue", "yellow"]):
+            tabs.addTab(Color(color), color)
 
-        btn = QPushButton("red")
-        btn.pressed.connect(self.activate_tab_1)
-        button_layout.addWidget(btn)
-        self.stacklayout.addWidget(Color("red"))
-
-        btn = QPushButton("green")
-        btn.pressed.connect(self.activate_tab_2)
-        button_layout.addWidget(btn)
-        self.stacklayout.addWidget(Color("green"))
-
-        btn = QPushButton("yellow")
-        btn.pressed.connect(self.activate_tab_3)
-        button_layout.addWidget(btn)
-        self.stacklayout.addWidget(Color("yellow"))
-
-        widget = QWidget()
-        widget.setLayout(pagelayout)
-        self.setCentralWidget(widget)
-
-    def activate_tab_1(self):
-        self.stacklayout.setCurrentIndex(0)
-
-    def activate_tab_2(self):
-        self.stacklayout.setCurrentIndex(1)
-
-    def activate_tab_3(self):
-        self.stacklayout.setCurrentIndex(2)
+        self.setCentralWidget(tabs)
 
 
 app = QApplication([])
