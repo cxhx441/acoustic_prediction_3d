@@ -1,25 +1,6 @@
 
-from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow, QPushButton, QDialogButtonBox, QVBoxLayout, QLabel
-
-
-class CustomDialog(QDialog):
-    def __init__(self, parent=None):
-        """ pass main window as parent to open directly above it"""
-        super().__init__(parent)
-
-        self.setWindowTitle("HELLO!")
-
-        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel  # | Ok | Open | Save
-
-        self.buttonBox = QDialogButtonBox(buttons)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-
-        self.layout = QVBoxLayout()
-        message = QLabel("Something happened, is that OK?")
-        self.layout.addWidget(message)
-        self.layout.addWidget(self.buttonBox)
-        self.setLayout(self.layout)
+from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow, QPushButton, QDialogButtonBox, QVBoxLayout, QLabel, \
+    QMessageBox
 
 
 class MainWindow(QMainWindow):
@@ -33,11 +14,17 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(button)
 
     def button_clicked(self, s):
-        dlg = CustomDialog()
-        if dlg.exec():
-            print("Success!")
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("I have a question!")
+        dlg.setText("This is a question dialog")
+        dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        dlg.setIcon(QMessageBox.Icon.Question)
+        button = dlg.exec()
+
+        if button == QMessageBox.Yes:
+            print("Yes!")
         else:
-            print("Cancel!")
+            print("No!")
 
 app = QApplication([])
 w = MainWindow()
