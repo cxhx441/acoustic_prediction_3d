@@ -13,28 +13,25 @@ class AnotherWindow(QWidget):
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
-        self.label = QLabel(str(randint(0, 100)))
+        self.label = QLabel("Another Window % d" % randint(0,100))
         layout.addWidget(self.label)
         self.setLayout(layout)
 
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super().__init__()
-        self.w = None
+        self.w = AnotherWindow()
         self.button = QPushButton("Push for Window")
-        self.button.clicked.connect(self.show_new_window)
+        self.button.clicked.connect(self.toggle_window)
         self.setCentralWidget(self.button)
 
-    def show_new_window(self, checked):
-        if self.w is None:
-            self.w = AnotherWindow()
-            self.w.show()
+    def toggle_window(self, checked):
+        if self.w.isVisible():
+            self.w.hide()
 
         else:
-            self.w.close()  # Close window.
-            self.w = None  # Discard reference.app = QApplication([])
+            self.w.show()
 
 app = QApplication([])
 w = MainWindow()
