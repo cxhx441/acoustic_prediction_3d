@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         layout_h.addWidget(button_close_project)
 
         self.setWindowTitle("Welcome")
+        self.setWindowIcon(QIcon("./icons/new-text.png"))
         self.setFixedSize(QSize(800, 800))
         widget = QWidget()
         widget.setLayout(layout_h)
@@ -61,6 +62,7 @@ class WelcomeDialog(QDialog):
     def __init__(self, parent):
         super().__init__()
         self.setWindowTitle("Welcome")
+        self.setWindowIcon(QIcon("./icons/new-text.png"))
 
         button_load_prj = QPushButton(QIcon("./icons/folder-horizontal-open.png"), "Load Project")
         # button_load_prj = QToolButton(parent.action_open_prj)
