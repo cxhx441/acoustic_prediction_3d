@@ -1,4 +1,5 @@
 from random import random, randint
+import sys
 
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon, QAction, QKeySequence
@@ -78,5 +79,5 @@ class WelcomeDialog(QDialog):
 qt_app = QApplication([])
 main_window = MainWindow()
 main_window.show()
-qt_app.exec()
+sys.exit(qt_app.exec())  # Good practice.
 
