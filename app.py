@@ -41,8 +41,9 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Welcome")
         self.setWindowIcon(QIcon("./icons/new-text.png"))
-        self.resize(screen.availableSize())
-        self.move(screen.availableGeometry().left(), screen.availableGeometry().top())
+        self.resize(1000, 1000)
+        # self.frameGeometry().moveCenter(screen.geometry().center())
+        self.center()
 
         # Main Window Components
         button_print_project = QPushButton("print project")
@@ -88,6 +89,16 @@ class MainWindow(QMainWindow):
     def close_project(self):
         self.hide()
         self.welcome_dialog.exec()
+
+    def center(self):
+        """ Thanks, ChatGPT. """
+        screen_geometry = QApplication.primaryScreen().geometry()
+        window_geometry = self.frameGeometry()
+
+        center_point = screen_geometry.center()
+        window_geometry.moveCenter(center_point)
+
+        self.move(window_geometry.topLeft())
 
 
 class WelcomeDialog(QDialog):
