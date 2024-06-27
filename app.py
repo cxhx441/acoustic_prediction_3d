@@ -2,9 +2,27 @@ from random import random, randint
 import sys
 
 from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon, QAction, QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QHBoxLayout, \
-    QFileDialog, QDialog, QToolButton
+# from PyQt6.QtGui import QIcon, QAction, QKeySequence, QPalette, QColor
+from PyQt6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
+    QHBoxLayout,
+    QFileDialog,
+    QDialog,
+    QToolButton,
+    QTabWidget,
+)
+from PyQt6.QtGui import QScreen, QGuiApplication, QIcon
+
+
+class TabWidget(QWidget):
+    def __init__(self, configuration=None):
+        super().__init__()
+        self.configuration = configuration
 
 
 class MainWindow(QMainWindow):
@@ -17,10 +35,14 @@ class MainWindow(QMainWindow):
         # self.action_open_prj.triggered.connect(self.load_project)
         # self.action_open_prj.setShortcut(QKeySequence("Ctrl+o"))
 
-
         # Ask user to either open an existing file, or start a new one.
         self.welcome_dialog = WelcomeDialog(self)
         self.welcome_dialog.exec()
+
+        self.setWindowTitle("Welcome")
+        self.setWindowIcon(QIcon("./icons/new-text.png"))
+        self.resize(screen.availableSize())
+        self.move(screen.availableGeometry().left(), screen.availableGeometry().top())
 
         # Main Window Components
         button_print_project = QPushButton("print project")
@@ -32,15 +54,22 @@ class MainWindow(QMainWindow):
         layout_h.addWidget(button_print_project)
         layout_h.addWidget(button_close_project)
 
-        self.setWindowTitle("Welcome")
-        self.setWindowIcon(QIcon("./icons/new-text.png"))
-        self.setFixedSize(QSize(800, 800))
-        widget = QWidget()
-        widget.setLayout(layout_h)
-        self.setCentralWidget(widget)
+        self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(True) # Only macOS affected
+        self.tabs.setTabPosition(QTabWidget.TabPosition.North)
+        self.tabs.setMovable(False)
+
+        self.tab_titles = ["red", "green", "blue", "yellow"]
+        for n, color in enumerate(self.tab_titles):
+            self.tabs.addTab(QWidget(), color)
+        self.tabs.setLayout(layout_h)
+        self.setCentralWidget(self.tabs)
+        # widget = QWidget()
+        # widget.setLayout(layout_h)
+        # self.setCentralWidget(widget)
 
     def print_project(self):
-        print(f"project is: {self.project_file_name}")
+        print(f"project is: {self.project_file_name}, configuration is: {self.tab_titles[self.tabs.currentIndex()]}")
 
     def load_project(self):
         print("loading project...")
@@ -48,13 +77,16 @@ class MainWindow(QMainWindow):
         self.project_file_name = fname[0]
         print(f'Opening file: {self.project_file_name}')
 
+        self.show()
         self.welcome_dialog.close()
 
     def new_project(self):
         print("starting new project...")
+        self.show()
         self.welcome_dialog.close()
 
     def close_project(self):
+        self.hide()
         self.welcome_dialog.exec()
 
 
@@ -79,7 +111,8 @@ class WelcomeDialog(QDialog):
 
 
 qt_app = QApplication([])
+screen = qt_app.primaryScreen()
 main_window = MainWindow()
-main_window.show()
+# main_window.show()
 sys.exit(qt_app.exec())  # Good practice.
 
