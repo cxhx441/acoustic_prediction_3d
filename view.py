@@ -24,7 +24,6 @@ class TabWidget(QWidget):
         super().__init__()
         self.configuration = configuration
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
