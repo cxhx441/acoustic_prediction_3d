@@ -1,8 +1,8 @@
 from random import random, randint
 import sys
 
-from PyQt6.QtCore import QSize
-# from PyQt6.QtGui import QIcon, QAction, QKeySequence, QPalette, QColor
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtGui import QIcon, QAction, QKeySequence, QPalette, QColor
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -14,10 +14,11 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QDialog,
     QToolButton,
+    QToolBar,
     QTabWidget,
     QLineEdit,
     QComboBox,
-    QDialogButtonBox,
+    QDialogButtonBox, QStatusBar,
 )
 from PyQt6.QtGui import QScreen, QGuiApplication, QIcon
 
@@ -134,26 +135,44 @@ class MainWindow(QMainWindow):
         self.resize(1000, 1000)
         self.center()
 
-        # self.action_open_prj = QAction(QIcon("./icons/folder-horizontal-open.png"), "Load Project")
-        # self.action_open_prj.setStatusTip("Open a project")
-        # self.action_open_prj.triggered.connect(self.load_project)
-        # self.action_open_prj.setShortcut(QKeySequence("Ctrl+o"))
+        # add toolbar w buttons
+        toolbar = QToolBar("My MainWindow Toolbar")
+        toolbar.setIconSize(QSize(16, 16))
+        self.addToolBar(toolbar)
 
-        # Main Window Components
-        # button_print_project = QPushButton("print project")
-        # button_close_project = QPushButton("close project")
-        # button_print_project.clicked.connect(self.print_project)
-        # button_close_project.clicked.connect(self.close_project)
-        #
-        # layout_h = QHBoxLayout()
-        # layout_h.addWidget(button_print_project)
-        # layout_h.addWidget(button_close_project)
+        button_action = QAction(QIcon("wafer.png"), "&Your button", self)
+        button_action.setStatusTip("This is your button")
+        button_action.triggered.connect(self.onMyToolBarButtonClick)
+        button_action.setCheckable(True)
+        toolbar.addAction(button_action)
 
+        toolbar.addSeparator()
+
+        button_action2 = QAction(QIcon("wafer.png"), "Your &button2", self)
+        button_action2.setStatusTip("This is your button2")
+        button_action2.triggered.connect(self.onMyToolBarButtonClick)
+        button_action2.setCheckable(True)
+        toolbar.addAction(button_action2)
+
+        # add statusbar
+        statusbar = QStatusBar(self)
+        self.setStatusBar(statusbar)
+
+        # add menu
+        menu = self.menuBar()
+        file_menu = menu.addMenu("&File")
+        file_menu.addAction(button_action)
+        file_menu.addSeparator()
+        file_submenu = file_menu.addMenu("&Submenu")
+        file_submenu.addAction(button_action2)
+
+        # add tabs
         self.tabs = CustomTabWidget(self)
         self.setCentralWidget(self.tabs)
-        # widget = QWidget()
-        # widget.setLayout(layout_h)
-        # self.setCentralWidget(widget)
+
+
+    def onMyToolBarButtonClick(self, s):
+        print("click", s)
 
     def print_project(self):
         current_tab_title = self.tabs.tabText(self.tabs.currentIndex())
