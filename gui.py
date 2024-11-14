@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         else:
             window.show()
 
+
 app = QApplication([])
 w = MainWindow()
 w.show()
