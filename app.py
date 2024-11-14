@@ -57,12 +57,12 @@ class MainWindow(QMainWindow):
 
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True) # Only macOS affected
-        self.tabs.setTabPosition(QTabWidget.TabPosition.North)
+        self.tabs.setTabPosition(QTabWidget.TabPosition.South)
         self.tabs.setMovable(False)
 
         self.tab_titles = ["red", "green", "blue", "yellow"]
-        for n, color in enumerate(self.tab_titles):
-            self.tabs.addTab(QWidget(), color)
+        for n, title in enumerate(self.tab_titles):
+            self.tabs.addTab(QWidget(), title)
         self.tabs.setLayout(layout_h)
         self.setCentralWidget(self.tabs)
         # widget = QWidget()
