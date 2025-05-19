@@ -1,5 +1,9 @@
+from winreg import OpenKey
+
+from encodings.punycode import selective_find
 from random import random, randint
 import sys
+import logging
 
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon, QAction, QKeySequence, QPalette, QColor
@@ -21,6 +25,8 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox, QStatusBar,
 )
 from PyQt6.QtGui import QScreen, QGuiApplication, QIcon
+
+logging.basicConfig(level=logging.DEBUG)
 
 class NewTabDialog(QDialog):
     def __init__(self, parent=None, existing_tabs=None):
@@ -118,17 +124,13 @@ class CustomTabWidget(QTabWidget):
 
     def print_tab_info(self):
         current_tab_title = self.tabText(self.currentIndex())
-        print(f'Current Tab: {current_tab_title}')
+        logging.debug(f'Current Tab: {current_tab_title}')
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.project_file_name = None
-
-        # Ask user to either open an existing file, or start a new one.
-        self.welcome_dialog = WelcomeDialog(self)
-        self.welcome_dialog.exec()
 
         self.setWindowTitle("Welcome")
         self.setWindowIcon(QIcon("./icons/new-text.png"))
@@ -140,19 +142,43 @@ class MainWindow(QMainWindow):
         toolbar.setIconSize(QSize(16, 16))
         self.addToolBar(toolbar)
 
-        button_action = QAction(QIcon("wafer.png"), "&Your button", self)
-        button_action.setStatusTip("This is your button")
-        button_action.triggered.connect(self.onMyToolBarButtonClick)
-        button_action.setCheckable(True)
-        toolbar.addAction(button_action)
+        button_new_file_action = self._make_button_action(
+            toolbar=toolbar,
+            icon_png="icons/application--plus.png",
+            menu_str="&New",
+            status_str="Open a new file",
+            triggered_func=self.new_project,
+            set_checkable=False,
+            add_separator=True
+        )
+
+        button_open_action = self._make_button_action(
+            toolbar=toolbar,
+            icon_png="icons/folder-horizontal-open.png",
+            menu_str="&Open...",
+            status_str="Open an existing .ax file",
+            triggered_func=self.open_project,
+            set_checkable=False,
+            add_separator=True
+        )
+
+        button_close_action = self._make_button_action(
+            toolbar=None,
+            icon_png="Close",
+            menu_str="&Close",
+            status_str="Close the current file",
+            triggered_func=self.close_project,
+            set_checkable=False,
+            add_separator=True
+        )
+
+        button_template_action = QAction(QIcon("wafer.png"), "&Your template Button", self)
+        button_template_action.setStatusTip("this is my template button")
+        button_template_action.triggered.connect(self.onMyToolBarButtonClick)
+        button_template_action.setCheckable(True)
+        toolbar.addAction(button_template_action)
 
         toolbar.addSeparator()
-
-        button_action2 = QAction(QIcon("wafer.png"), "Your &button2", self)
-        button_action2.setStatusTip("This is your button2")
-        button_action2.triggered.connect(self.onMyToolBarButtonClick)
-        button_action2.setCheckable(True)
-        toolbar.addAction(button_action2)
 
         # add statusbar
         statusbar = QStatusBar(self)
@@ -161,33 +187,53 @@ class MainWindow(QMainWindow):
         # add menu
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
-        file_menu.addAction(button_action)
+        file_menu.addAction(button_new_file_action)
+        file_menu.addAction(button_open_action)
+        file_menu.addAction(button_close_action)
         file_menu.addSeparator()
         file_submenu = file_menu.addMenu("&Submenu")
-        file_submenu.addAction(button_action2)
+        file_submenu.addAction(button_template_action)
 
         # add tabs
         self.tabs = CustomTabWidget(self)
         self.setCentralWidget(self.tabs)
 
+        # Ask user to either open an existing file, or start a new one.
+        self.welcome_dialog = WelcomeDialog(self)
+        self.welcome_dialog.exec()
+
+    def _make_button_action(self, toolbar, icon_png, menu_str, status_str, triggered_func, set_checkable, add_separator=False):
+
+        button_action = QAction(QIcon(icon_png), menu_str, self)
+        button_action.setStatusTip(status_str)
+        button_action.triggered.connect(triggered_func)
+        button_action.setCheckable(set_checkable)
+
+        if toolbar is not None:
+            toolbar.addAction(button_action)
+            if add_separator == True:
+                toolbar.addSeparator()
+
+        return button_action
+
 
     def onMyToolBarButtonClick(self, s):
-        print("click", s)
+        logging.debug("clicked toolbar button")
 
     def print_project(self):
         current_tab_title = self.tabs.tabText(self.tabs.currentIndex())
-        print(f"project is: {self.project_file_name}, configuration is: {current_tab_title}")
+        logging.debug(f"project is: {self.project_file_name}, configuration is: {current_tab_title}")
 
-    def load_project(self):
-        print("loading project...")
+    def open_project(self):
+        logging.debug("opening project...")
         fname = QFileDialog.getOpenFileName(self, 'Open file', 'c:\\', "SoundMap files (*.ax *.acs)")
         self.project_file_name = fname[0]
-        print(f'Opening file: {self.project_file_name}')
+        logging.debug(f'Opening file: {self.project_file_name}')
         self.show()
         self.welcome_dialog.close()
 
     def new_project(self):
-        print("starting new project...")
+        logging.debug("starting new project...")
         self.show()
         self.welcome_dialog.close()
 
@@ -210,15 +256,15 @@ class WelcomeDialog(QDialog):
         self.setWindowTitle("Welcome")
         self.setWindowIcon(QIcon("./icons/new-text.png"))
 
-        button_load_prj = QPushButton(QIcon("./icons/folder-horizontal-open.png"), "Load Project")
-        # button_load_prj = QToolButton(parent.action_open_prj)
+        button_open_prj = QPushButton(QIcon("./icons/folder-horizontal-open.png"), "Open Project")
+        # button_open_prj = QToolButton(parent.action_open_prj)
         button_new_prj = QPushButton(QIcon("./icons/application--plus.png"), "New Project")
-        button_load_prj.clicked.connect(parent.load_project)
+        button_open_prj.clicked.connect(parent.open_project)
         button_new_prj.clicked.connect(parent.new_project)
 
         layout_h = QHBoxLayout()
         layout_h.addWidget(button_new_prj)
-        layout_h.addWidget(button_load_prj)
+        layout_h.addWidget(button_open_prj)
 
         self.setFixedSize(QSize(500, 50))
         self.setLayout(layout_h)
