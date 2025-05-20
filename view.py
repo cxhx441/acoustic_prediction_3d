@@ -1,5 +1,4 @@
-from encodings.punycode import selective_find
-from random import random, randint
+#from encodings.punycode import selective_find
 import sys
 import logging
 
