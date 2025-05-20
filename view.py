@@ -23,7 +23,6 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox, QStatusBar, QGraphicsScene, QGraphicsPixmapItem, QGraphicsView, QAbstractScrollArea,
     QGestureEvent, QPinchGesture,
 )
-from PyQt6.QtGui import QScreen, QGuiApplication, QIcon
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -99,7 +98,6 @@ class DefaultTabContent(QWidget):
         else:
             self.label.setText(f"Default content for '{self.title}' tab, based on '{self.template_tab_title}' tab")
 
-        layout.addWidget(self.label)
 
         # Any additional default widgets can be added here
         # Example: layout.addWidget(QPushButton("Example Button"))
@@ -182,44 +180,6 @@ class MainWindow(QMainWindow):
         toolbar.setIconSize(QSize(16, 16))
         self.addToolBar(toolbar)
 
-        button_new_file_action = self._make_button_action(
-            toolbar=toolbar,
-            icon_png="icons/application--plus.png",
-            menu_str="&New",
-            status_str="Open a new file",
-            triggered_func=self.new_project,
-            set_checkable=False,
-            add_separator=True
-        )
-
-        button_open_action = self._make_button_action(
-            toolbar=toolbar,
-            icon_png="icons/folder-horizontal-open.png",
-            menu_str="&Open...",
-            status_str="Open an existing .ax file",
-            triggered_func=self.open_project,
-            set_checkable=False,
-            add_separator=True
-        )
-
-        button_close_action = self._make_button_action(
-            toolbar=None,
-            icon_png="Close",
-            menu_str="&Close",
-            status_str="Close the current file",
-            triggered_func=self.close_project,
-            set_checkable=False,
-            add_separator=True
-        )
-
-        button_template_action = QAction(QIcon("wafer.png"), "&Your template Button", self)
-        button_template_action.setStatusTip("this is my template button")
-        button_template_action.triggered.connect(self.onMyToolBarButtonClick)
-        button_template_action.setCheckable(True)
-        toolbar.addAction(button_template_action)
-
-        toolbar.addSeparator()
-
         # add statusbar
         statusbar = QStatusBar(self)
         self.setStatusBar(statusbar)
@@ -227,34 +187,76 @@ class MainWindow(QMainWindow):
         # add menu
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
-        file_menu.addAction(button_new_file_action)
-        file_menu.addAction(button_open_action)
-        file_menu.addAction(button_close_action)
-        file_menu.addSeparator()
-        file_submenu = file_menu.addMenu("&Submenu")
-        file_submenu.addAction(button_template_action)
+        edit_menu = menu.addMenu("&Edit")
+        tools_menu = menu.addMenu("&Tools")
 
-        # add tabs
+        # Add Tabs
         self.tabs = CustomTabWidget(self)
         self.setCentralWidget(self.tabs)
+
+
+        # add all actions
+        action_new_file = self._make_action(
+            triggered_func=self.new_project,
+            icon_png="icons/application--plus.png",
+            menu_str="&New",
+            status_str="Open a new file",
+            key_sequence="Ctrl+N",
+        )
+
+        action_open = self._make_action(
+            triggered_func=self.open_project,
+            icon_png="icons/folder-horizontal-open.png",
+            menu_str="&Open...",
+            status_str="Open an existing .ax file",
+            key_sequence="Ctrl+O"
+        )
+
+        action_close = self._make_action(
+            triggered_func=self.close_project,
+            menu_str="&Close",
+            key_sequence="Ctrl+Q",
+        )
+
+        action_template = self._make_action(
+            triggered_func=self.onMyToolBarButtonClick,
+            icon_png="wafer.png",
+            menu_str="&Your template button",
+            status_str="this is my template button",
+            set_checkable=True,
+            key_sequence="Ctrl+K",
+        )
+
+        # Add buttons to toolbars
+        toolbar.addAction(action_new_file)
+        toolbar.addAction(action_open)
+        toolbar.addAction(action_template)
+        toolbar.addSeparator()
+
+        # Add buttons to menus
+        file_menu.addAction(action_new_file)
+        file_menu.addAction(action_open)
+        file_menu.addAction(action_close)
+        file_menu.addSeparator()
+        file_submenu = file_menu.addMenu("&Submenu")
+        file_submenu.addAction(action_template)
+
+        # edit menu
+        edit_menu.addAction(action_template)
 
         # Ask user to either open an existing file, or start a new one.
         self.welcome_dialog = WelcomeDialog(self)
         self.welcome_dialog.exec()
 
-    def _make_button_action(self, toolbar, icon_png, menu_str, status_str, triggered_func, set_checkable, add_separator=False):
+    def _make_action(self, triggered_func, icon_png=None, menu_str=None, status_str=None, set_checkable=False, key_sequence=None):
+        """ Template for adding a button action. """
+        action = QAction(QIcon(icon_png), menu_str, self)
+        action.triggered.connect(triggered_func)
+        action.setStatusTip(status_str)
+        action.setCheckable(set_checkable)
+        action.setShortcut(QKeySequence(key_sequence))
 
-        button_action = QAction(QIcon(icon_png), menu_str, self)
-        button_action.setStatusTip(status_str)
-        button_action.triggered.connect(triggered_func)
-        button_action.setCheckable(set_checkable)
-
-        if toolbar is not None:
-            toolbar.addAction(button_action)
-            if add_separator == True:
-                toolbar.addSeparator()
-
-        return button_action
+        return action
 
 
     def onMyToolBarButtonClick(self, s):
