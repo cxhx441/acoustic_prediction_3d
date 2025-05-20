@@ -1,5 +1,3 @@
-from winreg import OpenKey
-
 from encodings.punycode import selective_find
 from random import random, randint
 import sys
