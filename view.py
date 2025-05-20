@@ -2,8 +2,9 @@
 import sys
 import logging
 
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QIcon, QAction, QKeySequence, QPalette, QColor
+from PyQt6.QtCore import QSize, Qt, QEvent
+from PyQt6.QtGui import QIcon, QAction, QKeySequence, QPalette, QColor, QPixmap, QPainter, QWheelEvent
+# from PyQt6.QtGui import QScreen, QGuiApplication, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -19,7 +20,8 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QLineEdit,
     QComboBox,
-    QDialogButtonBox, QStatusBar,
+    QDialogButtonBox, QStatusBar, QGraphicsScene, QGraphicsPixmapItem, QGraphicsView, QAbstractScrollArea,
+    QGestureEvent, QPinchGesture,
 )
 from PyQt6.QtGui import QScreen, QGuiApplication, QIcon
 
@@ -58,6 +60,28 @@ class NewTabDialog(QDialog):
         return self.name_input.text(), self.template_combo.currentText()
 
 
+class ZoomableGraphicsView(QGraphicsView):
+    def __init__(self, scene, parent=None):
+        super().__init__(scene, parent)
+        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)  # Optional: allows panning
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.zoom_factor = 1.15
+        self.current_scale = 1.0
+        self.min_scale = 0.05
+        self.max_scale = 100.0
+
+    def wheelEvent(self, event):
+        # Zoom in/out
+
+        zoom_in = event.angleDelta().y() > 0
+        factor = self.zoom_factor if zoom_in else 1 / self.zoom_factor
+
+        new_scale = self.current_scale * factor
+        if self.min_scale <= new_scale <= self.max_scale:
+            self.scale(factor, factor)
+            self.current_scale = new_scale
+
+
 class DefaultTabContent(QWidget):
     def __init__(self, title, based_on=None):
         super().__init__()
@@ -80,6 +104,22 @@ class DefaultTabContent(QWidget):
         # Any additional default widgets can be added here
         # Example: layout.addWidget(QPushButton("Example Button"))
 
+        # SET UP CANVAS
+        # setup canvas
+        self.scene = QGraphicsScene()
+
+        # load image, and load into canvas
+        pixmap = QPixmap("old/bed_image.png")
+        self.pixmap_item = QGraphicsPixmapItem(pixmap)
+        self.scene.addItem(self.pixmap_item)
+
+        # create the view to show the canvas
+        # self.view = QGraphicsView(self.scene, self)
+        self.view = ZoomableGraphicsView(self.scene, self)
+
+        layout.addWidget(self.view)
+
+        layout.addWidget(self.label)
         self.setLayout(layout)
 
 
@@ -93,12 +133,15 @@ class CustomTabWidget(QTabWidget):
 
         # Initial tabs and the "+" tab
         self.addTab(QWidget(), "+")  # Add the "+" tab
-        initial_tab_titles = ["red", "green", "blue", "yellow"]
-        for title in initial_tab_titles:
-            self.add_default_tab(title)
+        self.add_default_tab("Map1")
+        # initial_tab_titles = ["red", "green", "blue", "yellow"]
+        # for title in initial_tab_titles:
+        #     self.add_default_tab(title)
+        self.setCurrentIndex(0)
         self.currentChanged.connect(self.on_tab_changed)
 
     def on_tab_changed(self, index):
+        logging.debug(f"Tab index: {index}")
         # Check if the "+" tab was selected
         if self.tabText(index) == "+":
             existing_tabs = [self.tabText(i) for i in range(self.count() - 1)]
