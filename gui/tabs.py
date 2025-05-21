@@ -25,7 +25,6 @@ class DefaultTabContent(QWidget):
         else:
             self.label.setText(f"Default content for '{self.title}' tab, based on '{self.template_tab_title}' tab")
 
-
         # Any additional default widgets can be added here
         # Example: layout.addWidget(QPushButton("Example Button"))
 
