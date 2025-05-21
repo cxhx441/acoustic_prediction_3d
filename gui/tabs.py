@@ -14,9 +14,7 @@ class DefaultTabContent(QWidget):
         self.title = title
         self.template_tab_title = based_on
         self.label = QLabel(self.title)
-        self.init_ui()
 
-    def init_ui(self):
         layout = QVBoxLayout()
 
         # Add a label to display the tab title as default content
