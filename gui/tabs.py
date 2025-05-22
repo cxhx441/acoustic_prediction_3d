@@ -1,11 +1,10 @@
 import logging
 
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QTabWidget, QDialog, \
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QDialog, \
     QLineEdit, QComboBox, QDialogButtonBox
 
+from gui.scene import CustomScene
 from gui.zoomable_view import ZoomableGraphicsView
-from utils.path_utils import bed_image_path
 
 
 class DefaultTabContent(QWidget):
@@ -27,15 +26,16 @@ class DefaultTabContent(QWidget):
         # Example: layout.addWidget(QPushButton("Example Button"))
 
         # SET UP CANVAS
-        # setup canvas
-        self.scene = QGraphicsScene()
-
-        # load image, and load into canvas
-        pixmap = QPixmap(bed_image_path("bed_image.jpg"))
-        # pixmap = QPixmap(bed_image_path("bed_image.png"))
-
-        self.pixmap_item = QGraphicsPixmapItem(pixmap)
-        self.scene.addItem(self.pixmap_item)
+        self.scene = CustomScene()
+        # # setup canvas
+        # self.scene = QGraphicsScene()
+        #
+        # # load image, and load into canvas
+        # pixmap = QPixmap(bed_image_path("bed_image.jpg"))
+        # # pixmap = QPixmap(bed_image_path("bed_image.png"))
+        #
+        # self.pixmap_item = QGraphicsPixmapItem(pixmap)
+        # self.scene.addItem(self.pixmap_item)
 
         # create the view to show the canvas
         # self.view = QGraphicsView(self.scene, self)
