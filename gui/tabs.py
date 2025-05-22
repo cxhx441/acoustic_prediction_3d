@@ -26,7 +26,7 @@ class DefaultTabContent(QWidget):
         # Example: layout.addWidget(QPushButton("Example Button"))
 
         # SET UP CANVAS
-        self.scene = CustomScene()
+        self.scene = CustomScene(self)
         # # setup canvas
         # self.scene = QGraphicsScene()
         #
