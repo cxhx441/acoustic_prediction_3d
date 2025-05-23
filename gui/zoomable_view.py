@@ -1,12 +1,13 @@
 import logging
 
 from PyQt6.QtGui import QPainter, QWheelEvent
-from PyQt6.QtWidgets import QGraphicsView
+from PyQt6.QtWidgets import QGraphicsView, QLabel, QVBoxLayout
 
 
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self, scene, parent=None):
         super().__init__(scene, parent)
+        self.parent = parent
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)  # Allows panning
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setMouseTracking(True)
@@ -14,6 +15,10 @@ class ZoomableGraphicsView(QGraphicsView):
         self.current_scale = 1.0
         self.min_scale = 0.05
         self.max_scale = 100.0
+        self.label_scale = QLabel(f"Scale: {self.current_scale}")
+        layout = QVBoxLayout()
+        layout.addWidget(self.label_scale)
+        self.setLayout(layout)
 
     def wheelEvent(self, event: QWheelEvent):
         """ Zoom in/out centered around mouse position. """
@@ -40,13 +45,6 @@ class ZoomableGraphicsView(QGraphicsView):
             logging.debug(f"center: x, y: {old_center.x():.2f}, {old_center.y():.2f}")
             logging.debug(f"current_scale: {self.current_scale}\n")
 
-        # COULD JUST DO THIS. But apparently less flexible and less precise. Not good for CAD type.
-        # self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        # self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        #
-        # if self.min_scale <= new_scale <= self.max_scale:
-        #     self.scale(factor, factor)
-        #     self.current_scale = new_scale
-        #     logging.debug(f"current_scale: {self.current_scale}\n")
-
-
+        # Update scale label
+        logging.debug("updating scale label")
+        self.parent.label_scale.setText(f"Scale : ( 1 : {self.current_scale:.2f} )")

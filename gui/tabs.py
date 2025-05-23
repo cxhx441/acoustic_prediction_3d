@@ -12,38 +12,27 @@ class DefaultTabContent(QWidget):
         super().__init__()
         self.title = title
         self.template_tab_title = based_on
-        self.label = QLabel(self.title)
+
+        self.scene = CustomScene(self)
+        self.view = ZoomableGraphicsView(self.scene, self)
+
+        self.label_title = QLabel(self.title)
+        self.label_scale = QLabel(f"Scale: (1 : {self.view.current_scale})")
 
         layout = QVBoxLayout()
 
         # Add a label to display the tab title as default content
         if self.template_tab_title is None:
-            self.label.setText(f"Default content for '{self.title}' tab")
+            self.label_title.setText(f"Default content for '{self.title}' tab")
         else:
-            self.label.setText(f"Default content for '{self.title}' tab, based on '{self.template_tab_title}' tab")
+            self.label_title.setText(f"Default content for '{self.title}' tab, based on '{self.template_tab_title}' tab")
 
         # Any additional default widgets can be added here
         # Example: layout.addWidget(QPushButton("Example Button"))
 
-        # SET UP CANVAS
-        self.scene = CustomScene(self)
-        # # setup canvas
-        # self.scene = QGraphicsScene()
-        #
-        # # load image, and load into canvas
-        # pixmap = QPixmap(bed_image_path("bed_image.jpg"))
-        # # pixmap = QPixmap(bed_image_path("bed_image.png"))
-        #
-        # self.pixmap_item = QGraphicsPixmapItem(pixmap)
-        # self.scene.addItem(self.pixmap_item)
-
-        # create the view to show the canvas
-        # self.view = QGraphicsView(self.scene, self)
-        self.view = ZoomableGraphicsView(self.scene, self)
-
         layout.addWidget(self.view)
-
-        layout.addWidget(self.label)
+        layout.addWidget(self.label_title)
+        layout.addWidget(self.label_scale)
         self.setLayout(layout)
 
 
