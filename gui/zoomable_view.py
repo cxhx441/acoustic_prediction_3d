@@ -15,9 +15,9 @@ class ZoomableGraphicsView(QGraphicsView):
         self.current_scale = 1.0
         self.min_scale = 0.05
         self.max_scale = 100.0
-        self.label_scale = QLabel(f"Scale: {self.current_scale}")
+        # self.label_scale = QLabel(f"Scale: {self.current_scale}")
         layout = QVBoxLayout()
-        layout.addWidget(self.label_scale)
+        # layout.addWidget(self.label_scale)
         self.setLayout(layout)
 
     def wheelEvent(self, event: QWheelEvent):
@@ -48,3 +48,4 @@ class ZoomableGraphicsView(QGraphicsView):
         # Update scale label
         logging.debug("updating scale label")
         self.parent.label_scale.setText(f"Scale : ( 1 : {self.current_scale:.2f} )")
+        self.parent.label_scale.adjustSize()

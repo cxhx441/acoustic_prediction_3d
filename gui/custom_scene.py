@@ -2,6 +2,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsPixmapItem
 from utils.path_utils import bed_image_path
 
+
 class CustomScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)

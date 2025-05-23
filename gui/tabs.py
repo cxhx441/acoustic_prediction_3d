@@ -1,9 +1,10 @@
 import logging
 
+from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QDialog, \
     QLineEdit, QComboBox, QDialogButtonBox
 
-from gui.scene import CustomScene
+from gui.custom_scene import CustomScene
 from gui.zoomable_view import ZoomableGraphicsView
 
 
@@ -18,6 +19,22 @@ class DefaultTabContent(QWidget):
 
         self.label_title = QLabel(self.title)
         self.label_scale = QLabel(f"Scale: (1 : {self.view.current_scale})")
+        self.label_scale.setStyleSheet(
+            """
+            background-color: rgba(128, 128, 128, 180);
+            color: white; 
+            font-size: 14px;
+            font-wight: bold;
+            padding: 3px; 
+            border: rgba(0, 0, 0, 256);
+            border-radius: 4px;
+            """
+                                       )
+        # self.label_scale.setFixedSize(QSize(100, 20))
+        self.label_scale.adjustSize()
+        self.label_scale.setParent(self)
+        self.label_scale.move(10, 10)  # Top-left corner
+        self.label_scale.raise_()  # Stay on top
 
         layout = QVBoxLayout()
 
@@ -32,8 +49,9 @@ class DefaultTabContent(QWidget):
 
         layout.addWidget(self.view)
         layout.addWidget(self.label_title)
-        layout.addWidget(self.label_scale)
+        # layout.addWidget(self.label_scale)
         self.setLayout(layout)
+
 
 
 class CustomTabWidget(QTabWidget):
