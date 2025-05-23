@@ -1,6 +1,7 @@
 import logging
 
-from PyQt6.QtGui import QPainter, QWheelEvent
+from PyQt6.QtCore import QPointF
+from PyQt6.QtGui import QPainter, QWheelEvent, QMouseEvent
 from PyQt6.QtWidgets import QGraphicsView, QLabel, QVBoxLayout
 
 
@@ -15,13 +16,21 @@ class ZoomableGraphicsView(QGraphicsView):
         self.current_scale = 1.0
         self.min_scale = 0.05
         self.max_scale = 100.0
-        # self.label_scale = QLabel(f"Scale: {self.current_scale}")
-        layout = QVBoxLayout()
-        # layout.addWidget(self.label_scale)
-        self.setLayout(layout)
+        self.mouse_position = QPointF()
+        # layout = QVBoxLayout()
+        # self.setLayout(layout)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """ Track when the mouse moves with the scene. """
+        logging.debug("Moving mouse in Scene")
+        super().mouseMoveEvent(event)  # Need so inherited class mouseEvent gets triggered (dragging, in this case).
+        pos_viewport = event.position()  # Gives position w/in viewport.
+        self.mouse_position = self.mapToScene(pos_viewport.toPoint())
+        self.parent.update_mouse_pos_label()
 
     def wheelEvent(self, event: QWheelEvent):
         """ Zoom in/out centered around mouse position. """
+        super().wheelEvent(event)  # Inherited class wheelEvent gets triggered. Not used here. Seems like good practice.
         logging.debug("Zooming in/out")
 
         # Zoom in or out
@@ -46,6 +55,4 @@ class ZoomableGraphicsView(QGraphicsView):
             logging.debug(f"current_scale: {self.current_scale}\n")
 
         # Update scale label
-        logging.debug("updating scale label")
-        self.parent.label_scale.setText(f"Scale : ( 1 : {self.current_scale:.2f} )")
-        self.parent.label_scale.adjustSize()
+        self.parent.update_scale_label()

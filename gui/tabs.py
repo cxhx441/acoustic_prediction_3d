@@ -18,7 +18,8 @@ class DefaultTabContent(QWidget):
         self.view = ZoomableGraphicsView(self.scene, self)
 
         self.label_title = QLabel(self.title)
-        self.label_scale = QLabel(f"Scale: (1 : {self.view.current_scale})")
+
+        self.label_scale = QLabel()
         self.label_scale.setStyleSheet(
             """
             background-color: rgba(128, 128, 128, 180);
@@ -30,13 +31,27 @@ class DefaultTabContent(QWidget):
             border-radius: 4px;
             """
                                        )
-        # self.label_scale.setFixedSize(QSize(100, 20))
-        self.label_scale.adjustSize()
         self.label_scale.setParent(self)
         self.label_scale.move(10, 10)  # Top-left corner
         self.label_scale.raise_()  # Stay on top
+        self.update_scale_label()
 
-        layout = QVBoxLayout()
+        self.label_mouse_pos = QLabel()
+        self.label_mouse_pos.setStyleSheet(
+            """
+            background-color: rgba(128, 128, 128, 180);
+            color: white;
+            font-size: 14px;
+            font-wight: bold;
+            padding: 3px;
+            border: rgba(0, 0, 0, 256);
+            border-radius: 4px;
+            """
+        )
+        self.label_mouse_pos.setParent(self)
+        self.label_mouse_pos.move(10, 40)  # Top-left corner
+        self.label_mouse_pos.raise_()  # Stay on top
+        self.update_mouse_pos_label()
 
         # Add a label to display the tab title as default content
         if self.template_tab_title is None:
@@ -47,11 +62,24 @@ class DefaultTabContent(QWidget):
         # Any additional default widgets can be added here
         # Example: layout.addWidget(QPushButton("Example Button"))
 
+        layout = QVBoxLayout()
         layout.addWidget(self.view)
         layout.addWidget(self.label_title)
         # layout.addWidget(self.label_scale)
         self.setLayout(layout)
 
+    def update_scale_label(self):
+        """ Update the scale label with the current scale from view object """
+        logging.debug("updating scale label")
+        self.label_scale.setText(f"Zoom: {self.view.current_scale:.0%}")
+        self.label_scale.adjustSize()
+
+    def update_mouse_pos_label(self):
+        """ Update the mouse position label with the current mouse position from view object """
+        logging.debug("updating mouse position label")
+        pos = self.view.mouse_position
+        self.label_mouse_pos.setText(f"x: {pos.x():.2f}, y: {pos.y():.2f}")
+        self.label_mouse_pos.adjustSize()
 
 
 class CustomTabWidget(QTabWidget):
