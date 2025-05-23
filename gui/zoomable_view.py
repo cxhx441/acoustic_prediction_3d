@@ -13,10 +13,11 @@ class ZoomableGraphicsView(QGraphicsView):
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setMouseTracking(True)
         self.zoom_factor = 1.15
-        self.current_scale = 1.0
-        self.min_scale = 0.05
-        self.max_scale = 100.0
+        self.current_zoom_scale = 1.0
+        self.min_zoom_scale = 0.05
+        self.max_zoom_scale = 100.0
         self.mouse_position = QPointF()
+        self.world_scale = None  # Pixels to feet
         # layout = QVBoxLayout()
         # self.setLayout(layout)
 
@@ -36,13 +37,13 @@ class ZoomableGraphicsView(QGraphicsView):
         # Zoom in or out
         zoom_in = event.angleDelta().y() > 0
         factor = self.zoom_factor if zoom_in else 1 / self.zoom_factor
-        new_scale = self.current_scale * factor
+        new_zoom_scale = self.current_zoom_scale * factor
 
         # Zoom around the mouse position
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
         self.setResizeAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
 
-        if self.min_scale <= new_scale <= self.max_scale:
+        if self.min_zoom_scale <= new_zoom_scale <= self.max_zoom_scale:
             pos_viewport = event.position()  # Gives position w/in viewport.
 
             old_center = self.mapToScene(pos_viewport.toPoint())
@@ -50,9 +51,9 @@ class ZoomableGraphicsView(QGraphicsView):
             new_center = self.mapToScene(pos_viewport.toPoint())
             d = new_center - old_center
             self.translate(d.x(), d.y())
-            self.current_scale = new_scale
+            self.current_zoom_scale = new_zoom_scale
             logging.debug(f"center: x, y: {old_center.x():.2f}, {old_center.y():.2f}")
-            logging.debug(f"current_scale: {self.current_scale}\n")
+            logging.debug(f"current_scale: {self.current_zoom_scale}\n")
 
         # Update scale label
-        self.parent.update_scale_label()
+        self.parent.update_zoom_scale_label()

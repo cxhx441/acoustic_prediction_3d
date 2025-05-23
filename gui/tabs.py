@@ -19,8 +19,9 @@ class DefaultTabContent(QWidget):
 
         self.label_title = QLabel(self.title)
 
-        self.label_scale = QLabel()
-        self.label_scale.setStyleSheet(
+        # Image Scale Label
+        self.label_zoom_scale = QLabel()
+        self.label_zoom_scale.setStyleSheet(
             """
             background-color: rgba(128, 128, 128, 180);
             color: white; 
@@ -31,11 +32,12 @@ class DefaultTabContent(QWidget):
             border-radius: 4px;
             """
                                        )
-        self.label_scale.setParent(self)
-        self.label_scale.move(10, 10)  # Top-left corner
-        self.label_scale.raise_()  # Stay on top
-        self.update_scale_label()
+        self.label_zoom_scale.setParent(self)
+        self.label_zoom_scale.move(10, 10)  # Top-left corner
+        self.label_zoom_scale.raise_()  # Stay on top
+        self.update_zoom_scale_label()
 
+        # Mouse Position Label
         self.label_mouse_pos = QLabel()
         self.label_mouse_pos.setStyleSheet(
             """
@@ -53,6 +55,24 @@ class DefaultTabContent(QWidget):
         self.label_mouse_pos.raise_()  # Stay on top
         self.update_mouse_pos_label()
 
+        # World Scale Label
+        self.label_world_scale = QLabel()
+        self.label_world_scale.setStyleSheet(
+            """
+            background-color: rgba(128, 128, 128, 180);
+            color: white;
+            font-size: 14px;
+            font-wight: bold;
+            padding: 3px;
+            border: rgba(0, 0, 0, 256);
+            border-radius: 4px;
+            """
+        )
+        self.label_world_scale.setParent(self)
+        self.label_world_scale.move(10, 70)  # Top-left corner
+        self.label_world_scale.raise_()  # Stay on top
+        self.update_world_scale_label()
+
         # Add a label to display the tab title as default content
         if self.template_tab_title is None:
             self.label_title.setText(f"Default content for '{self.title}' tab")
@@ -68,11 +88,11 @@ class DefaultTabContent(QWidget):
         # layout.addWidget(self.label_scale)
         self.setLayout(layout)
 
-    def update_scale_label(self):
+    def update_zoom_scale_label(self):
         """ Update the scale label with the current scale from view object """
-        logging.debug("updating scale label")
-        self.label_scale.setText(f"Zoom: {self.view.current_scale:.0%}")
-        self.label_scale.adjustSize()
+        logging.debug("updating zoom scale label")
+        self.label_zoom_scale.setText(f"Zoom: {self.view.current_zoom_scale:.0%}")
+        self.label_zoom_scale.adjustSize()
 
     def update_mouse_pos_label(self):
         """ Update the mouse position label with the current mouse position from view object """
@@ -80,6 +100,19 @@ class DefaultTabContent(QWidget):
         pos = self.view.mouse_position
         self.label_mouse_pos.setText(f"x: {pos.x():.2f}, y: {pos.y():.2f}")
         self.label_mouse_pos.adjustSize()
+
+    def update_world_scale_label(self):
+        """ Update the world scale label/shape with info from view object """
+        logging.debug("updating world scale label")
+
+        if self.view.world_scale is None:
+            self.label_world_scale.setText("World Scale: Not Set")
+        else:
+            pixels = self.view.world_scale[0]
+            feet = self.view.world_scale[1]
+            self.label_world_scale.setText(f"World Scale: {pixels}px : {feet:.2f}ft")
+
+        self.label_world_scale.adjustSize()
 
 
 class CustomTabWidget(QTabWidget):
