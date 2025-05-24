@@ -17,9 +17,6 @@ class ZoomableGraphicsView(QGraphicsView):
         self.min_zoom_scale = 0.05
         self.max_zoom_scale = 100.0
         self.mouse_position = QPointF()
-        self.world_scale = None  # Pixels to feet
-        # layout = QVBoxLayout()
-        # self.setLayout(layout)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         """ Track when the mouse moves with the scene. """

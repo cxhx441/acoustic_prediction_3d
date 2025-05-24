@@ -105,11 +105,11 @@ class DefaultTabContent(QWidget):
         """ Update the world scale label/shape with info from view object """
         logging.debug("updating world scale label")
 
-        if self.view.world_scale is None:
+        if self.scene.world_scale is None:
             self.label_world_scale.setText("World Scale: Not Set")
         else:
-            pixels = self.view.world_scale[0]
-            feet = self.view.world_scale[1]
+            pixels = self.scene.world_scale[0]
+            feet = self.scene.world_scale[1]
             self.label_world_scale.setText(f"World Scale: {pixels}px : {feet:.2f}ft")
 
         self.label_world_scale.adjustSize()
