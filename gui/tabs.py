@@ -9,8 +9,9 @@ from gui.zoomable_view import ZoomableGraphicsView
 
 
 class DefaultTabContent(QWidget):
-    def __init__(self, title, based_on=None):
+    def __init__(self, title, based_on=None, parent_tab_widget=None):
         super().__init__()
+        self.parent_tab_widget = parent_tab_widget
         self.title = title
         self.template_tab_title = based_on
 
@@ -115,6 +116,8 @@ class DefaultTabContent(QWidget):
         self.label_world_scale.adjustSize()
 
 
+
+
 class CustomTabWidget(QTabWidget):
     def __init__(self, parent_window):
         super().__init__()
@@ -122,6 +125,7 @@ class CustomTabWidget(QTabWidget):
         self.setDocumentMode(True)
         self.setTabPosition(QTabWidget.TabPosition.South)
         self.setMovable(True)
+        self.setUsesScrollButtons(False)
 
         # Initial tabs and the "+" tab
         self.addTab(QWidget(), "+")  # Add the "+" tab
@@ -151,8 +155,9 @@ class CustomTabWidget(QTabWidget):
 
     def add_default_tab(self, title, template_tab_title=None):
         insert_index = self.count() - 1  # Insert before the '+' tab.
-        tab_content = DefaultTabContent(title, template_tab_title)
+        tab_content = DefaultTabContent(title, template_tab_title, self)
         self.insertTab(insert_index, tab_content, title)
+        # return tab_content
 
     def print_tab_info(self):
         current_tab_title = self.tabText(self.currentIndex())

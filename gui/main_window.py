@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QFileDialog,
     QToolBar,
-    QStatusBar
+    QStatusBar, QGraphicsView
 )
 
 from gui.tabs import CustomTabWidget
@@ -28,22 +28,22 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Welcome")
         self.setWindowIcon(QIcon(resource_path("icons/new-text.png")))
         self.resize(1000, 1000)
-        self.center()
+        self._center_window()
 
         # add toolbar w buttons
-        toolbar = QToolBar("My MainWindow Toolbar")
-        toolbar.setIconSize(QSize(16, 16))
-        self.addToolBar(toolbar)
+        self.toolbar = QToolBar("My MainWindow Toolbar")
+        self.toolbar.setIconSize(QSize(16, 16))
+        self.addToolBar(self.toolbar)
 
         # add statusbar
-        statusbar = QStatusBar(self)
-        self.setStatusBar(statusbar)
+        self.statusbar = QStatusBar(self)
+        self.setStatusBar(self.statusbar)
 
         # add menu
-        menu = self.menuBar()
-        file_menu = menu.addMenu("&File")
-        edit_menu = menu.addMenu("&Edit")
-        tools_menu = menu.addMenu("&Tools")
+        self.menu = self.menuBar()
+        self.file_menu = self.menu.addMenu("&File")
+        self.edit_menu = self.menu.addMenu("&Edit")
+        self.tools_menu = self.menu.addMenu("&Tools")
 
         # Add Tabs
         self.tabs = CustomTabWidget(self)
@@ -51,29 +51,29 @@ class MainWindow(QMainWindow):
 
 
         # add all actions
-        action_new_file = self._make_action(
+        self.action_new_file = self._make_action(
             triggered_func=self.new_project,
-            icon_png=resource_path("icons/application--plus.png"),
+            icon_png="application--plus.png",
             menu_str="&New",
             status_str="Open a new file",
             key_sequence="Ctrl+N",
         )
 
-        action_open = self._make_action(
+        self.action_open = self._make_action(
             triggered_func=self.open_project,
-            icon_png=resource_path("icons/folder-horizontal-open.png"),
+            icon_png="folder-horizontal-open.png",
             menu_str="&Open...",
             status_str="Open an existing .ax file",
             key_sequence="Ctrl+O"
         )
 
-        action_close = self._make_action(
+        self.action_close = self._make_action(
             triggered_func=self.close_project,
             menu_str="&Close",
             key_sequence="Ctrl+Q",
         )
 
-        action_template = self._make_action(
+        self.action_template = self._make_action(
             triggered_func=self.onMyToolBarButtonClick,
             icon_png="wafer.png",
             menu_str="&Your template button",
@@ -82,22 +82,40 @@ class MainWindow(QMainWindow):
             key_sequence="Ctrl+K",
         )
 
+        self.action_enable_line_tool = self._make_action(
+            triggered_func=self.enable_line_tool,
+            icon_png="line.png",
+            status_str="Line Tool",
+            set_checkable=True,
+            key_sequence="Ctrl+2"
+        )
+
+        self.action_enable_hand_tool = self._make_action(
+            triggered_func=self.enable_hand_tool,
+            icon_png="hand.png",
+            status_str="Hand Tool",
+            set_checkable=True,
+            key_sequence="Ctrl+H"
+        )
+
         # Add buttons to toolbars
-        toolbar.addAction(action_new_file)
-        toolbar.addAction(action_open)
-        toolbar.addAction(action_template)
-        toolbar.addSeparator()
+        self.toolbar.addAction(self.action_new_file)
+        self.toolbar.addAction(self.action_open)
+        self.toolbar.addAction(self.action_template)
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.action_enable_hand_tool)
+        self.toolbar.addAction(self.action_enable_line_tool)
 
         # Add buttons to menus
-        file_menu.addAction(action_new_file)
-        file_menu.addAction(action_open)
-        file_menu.addAction(action_close)
-        file_menu.addSeparator()
-        file_submenu = file_menu.addMenu("&Submenu")
-        file_submenu.addAction(action_template)
+        self.file_menu.addAction(self.action_new_file)
+        self.file_menu.addAction(self.action_open)
+        self.file_menu.addAction(self.action_close)
+        self.file_menu.addSeparator()
+        self.file_submenu = self.file_menu.addMenu("&Submenu")
+        self.file_submenu.addAction(self.action_template)
 
         # edit menu
-        edit_menu.addAction(action_template)
+        self.edit_menu.addAction(self.action_template)
 
         # Ask user to either open an existing file, or start a new one.
         self.welcome_dialog = WelcomeDialog(self)
@@ -105,14 +123,37 @@ class MainWindow(QMainWindow):
 
     def _make_action(self, triggered_func, icon_png=None, menu_str=None, status_str=None, set_checkable=False, key_sequence=None):
         """ Template for adding a button action. """
-        action = QAction(QIcon(icon_png), menu_str, self)
+        icon = QIcon(f"resources/icons/{icon_png}")
+        action = QAction(icon, menu_str, self)
         action.triggered.connect(triggered_func)
         action.setStatusTip(status_str)
         action.setCheckable(set_checkable)
         action.setShortcut(QKeySequence(key_sequence))
-
         return action
 
+    def disable_all_scene_tools(self):
+        """ disable all scene tools """
+        self.action_enable_line_tool.setChecked(False)
+        cur_tab = self.tabs.currentWidget()
+        cur_tab.view.setDragMode(QGraphicsView.DragMode.NoDrag)  # No Panning
+        cur_tab.view.line_tool_enabled = False
+        self.action_enable_hand_tool.setChecked(False)
+
+    def enable_line_tool(self):
+        """ activate line tool """
+        logging.debug("activate line tool")
+        self.disable_all_scene_tools()
+        self.action_enable_line_tool.setChecked(True)
+        cur_tab = self.tabs.currentWidget()
+        cur_tab.view.line_tool_enabled = True
+
+    def enable_hand_tool(self):
+        """ activate line tool """
+        logging.debug("activate hand tool")
+        self.disable_all_scene_tools()
+        self.action_enable_hand_tool.setChecked(True)
+        cur_tab = self.tabs.currentWidget()
+        cur_tab.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)  # Allows panning
 
     def onMyToolBarButtonClick(self, s):
         logging.debug("clicked toolbar button")
@@ -138,7 +179,7 @@ class MainWindow(QMainWindow):
         self.hide()
         self.welcome_dialog.exec()
 
-    def center(self):
+    def _center_window(self):
         """ Thanks, ChatGPT. """
         screen_geometry = QApplication.primaryScreen().geometry()
         window_geometry = self.frameGeometry()

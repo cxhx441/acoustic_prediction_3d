@@ -1,15 +1,16 @@
 import logging
 
-from PyQt6.QtCore import QPointF
-from PyQt6.QtGui import QPainter, QWheelEvent, QMouseEvent
+from PyQt6.QtCore import QPointF, Qt
+from PyQt6.QtGui import QPainter, QWheelEvent, QMouseEvent, QDragMoveEvent
 from PyQt6.QtWidgets import QGraphicsView, QLabel, QVBoxLayout
 
 
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self, scene, parent=None):
         super().__init__(scene, parent)
+        self.scene = scene
         self.parent = parent
-        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)  # Allows panning
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)  # Selection Tool?
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setMouseTracking(True)
         self.zoom_factor = 1.15
@@ -18,13 +19,44 @@ class ZoomableGraphicsView(QGraphicsView):
         self.max_zoom_scale = 100.0
         self.mouse_position = QPointF()
 
-    def mouseMoveEvent(self, event: QMouseEvent):
+        self.line_tool_enabled = False
+        self.dragging = False
+        self.p0 = None
+        self.p1 = None
+        self.temp_line = None
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        if event.button() == Qt.MouseButton.LeftButton and self.line_tool_enabled:
+            self.dragging = True
+            pos_viewport = event.position()  # Gives position w/in viewport.
+            self.p0 = self.mapToScene(pos_viewport.toPoint())
+
+    def mouseMoveEvent(self, event):
         """ Track when the mouse moves with the scene. """
         logging.debug("Moving mouse in Scene")
+
         super().mouseMoveEvent(event)  # Need so inherited class mouseEvent gets triggered (dragging, in this case).
         pos_viewport = event.position()  # Gives position w/in viewport.
         self.mouse_position = self.mapToScene(pos_viewport.toPoint())
         self.parent.update_mouse_pos_label()
+
+        logging.debug("BEFORE: left Button + line tool enabled")
+        if self.dragging and self.line_tool_enabled:
+            logging.debug("AFTER: left Button + line tool enabled")
+            if self.temp_line is not None:
+                self.scene.removeItem(self.temp_line)
+            self.p1 = self.mapToScene(pos_viewport.toPoint())
+            self.temp_line = self.scene.draw_line(self.p0.x(), self.p0.y(), self.p1.x(), self.p1.y())
+
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        if event.button() == Qt.MouseButton.LeftButton and self.line_tool_enabled:
+            self.dragging = False
+            pos_viewport = event.position()  # Gives position w/in viewport.
+            self.p1 = self.mapToScene(pos_viewport.toPoint())
+            self.scene.draw_line(self.p0.x(), self.p0.y(), self.p1.x(), self.p1.y())
+            self.temp_line = None
 
     def wheelEvent(self, event: QWheelEvent):
         """ Zoom in/out centered around mouse position. """
